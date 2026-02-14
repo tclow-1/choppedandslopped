@@ -1,23 +1,23 @@
-import { useRef, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+// Singleton AudioContext - created once per application
+let globalAudioContext: AudioContext | null = null;
+
+function getOrCreateAudioContext(): AudioContext {
+  if (!globalAudioContext || globalAudioContext.state === 'closed') {
+    globalAudioContext = new AudioContext();
+  }
+  return globalAudioContext;
+}
 
 export function useAudioContext(): AudioContext | null {
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  // Lazy creation - create on first call, return existing on subsequent
-  const getOrCreateContext = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-    }
-    return audioContextRef.current;
-  };
+  const [audioContext] = useState<AudioContext>(() => getOrCreateAudioContext());
 
   useEffect(() => {
-    const ctx = getOrCreateContext();
-
     // Resume on user interaction (autoplay policy)
     const resumeContext = async () => {
-      if (ctx.state === 'suspended') {
-        await ctx.resume();
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
       }
     };
 
@@ -25,13 +25,8 @@ export function useAudioContext(): AudioContext | null {
     document.addEventListener('click', resumeContext, { once: true });
     document.addEventListener('keydown', resumeContext, { once: true });
 
-    return () => {
-      // Cleanup on unmount
-      if (ctx.state !== 'closed') {
-        ctx.close();
-      }
-    };
-  }, []);
+    // NO cleanup - singleton context persists for app lifetime
+  }, [audioContext]);
 
-  return getOrCreateContext();
+  return audioContext;
 }
