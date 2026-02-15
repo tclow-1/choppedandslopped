@@ -180,7 +180,17 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     setCurrentTime(clampedTime);
 
     if (playbackState === 'playing') {
-      // Restart playback at new position
+      // Explicitly stop and cleanup current source BEFORE calling play()
+      if (sourceNodeRef.current) {
+        try {
+          sourceNodeRef.current.stop();
+        } catch (e) {
+          // Ignore if already stopped
+        }
+        sourceNodeRef.current.disconnect();
+        sourceNodeRef.current = null;
+      }
+      // Now restart playback at new position with clean state
       play();
     }
   }, [duration, playbackState, play]);
