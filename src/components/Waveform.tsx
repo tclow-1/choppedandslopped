@@ -18,7 +18,6 @@ export function Waveform({
 }: WaveformProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
-  const lastSeekTimeRef = useRef<number>(0); // Track last seek time for debouncing
 
   const { wavesurfer } = useWavesurfer({
     container: containerRef,
@@ -64,18 +63,12 @@ export function Waveform({
     wavesurfer.setTime(currentTime);
   }, [wavesurfer, isReady, currentTime]);
 
-  // Handle click-to-seek (user clicks waveform) - debounced to prevent rapid seeks
+  // Handle click-to-seek (user clicks waveform) - pass directly to Phase 1 seek()
   useEffect(() => {
     if (!wavesurfer) return;
 
     const handleSeeking = (seekTime: number) => {
-      const now = Date.now();
-
-      // Debounce: ignore seeks within 100ms to prevent rapid-fire calls
-      if (now - lastSeekTimeRef.current < 100) return;
-      lastSeekTimeRef.current = now;
-
-      // Call Phase 1 seek - Phase 1 will update currentTime which syncs cursor
+      // Call Phase 1 seek - it handles stopping current source and starting at new position
       onSeek?.(seekTime);
     };
 
