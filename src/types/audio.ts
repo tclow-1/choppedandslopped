@@ -12,6 +12,10 @@ export interface AudioPlayerState {
   audioUrl: string | null; // Object URL for Waveform visualization
 }
 
+export interface ChopMarker {
+  time: number;  // Timestamp in seconds where chop was triggered
+}
+
 export interface AudioPlayerControls {
   loadFile: (file: File) => Promise<void>;
   play: () => void;

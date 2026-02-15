@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWavesurfer } from '@wavesurfer/react';
+import { ChopMarkerOverlay } from './ChopMarkerOverlay';
 import './Waveform.css';
 
 interface WaveformProps {
@@ -8,13 +9,16 @@ interface WaveformProps {
   duration: number;              // Total duration from Phase 1
   onSeek?: (time: number) => void;  // Called when user clicks waveform to seek
   onWaveformReady?: () => void;     // Called when waveform finishes rendering
+  chopMarkerTimes?: number[];       // Array of chop timestamps in seconds
 }
 
 export function Waveform({
   audioUrl,
   currentTime,
+  duration,
   onSeek,
   onWaveformReady,
+  chopMarkerTimes,
 }: WaveformProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
@@ -95,6 +99,13 @@ export function Waveform({
   return (
     <div className="waveform-wrapper">
       <div ref={containerRef} />
+      {duration > 0 && (
+        <ChopMarkerOverlay
+          markerTimes={chopMarkerTimes ?? []}
+          duration={duration}
+          waveformColor="#4F4A85"
+        />
+      )}
     </div>
   );
 }
