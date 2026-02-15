@@ -11,28 +11,28 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 ## Current Position
 
 Phase: 1 of 4 (Audio Foundation)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-14 — Completed 01-01-PLAN.md (Audio engine foundation)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-14 — Completed 01-02-PLAN.md (UI components and keyboard shortcuts)
 
-Progress: [█████░░░░░] 50% of Phase 1
+Progress: [██████████] 100% of Phase 1 ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 201 min (3h 21m)
-- Total execution time: 3.4 hours
+- Total plans completed: 2
+- Average duration: 105 min (1h 45m)
+- Total execution time: 3.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Audio Foundation | 1/2 | 201 min | 201 min |
+| 1. Audio Foundation | 2/2 ✓ | 210 min | 105 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (201m)
-- Trend: First plan baseline
+- Last 5 plans: 01-01 (201m), 01-02 (9m)
+- Trend: Significant speedup in 01-02 (UI layer built on solid foundation)
 
 *Updated after each plan completion*
 
@@ -53,6 +53,10 @@ Recent decisions affecting current work:
 - **Singleton AudioContext (01-01)**: Single shared context to avoid performance degradation.
 - **RequestAnimationFrame position tracking (01-01)**: Stays in sync with audio clock, prevents drift from setInterval.
 - **LinearRampToValueAtTime for volume (01-01)**: Supports true silence at 0 without exponential ramp workarounds.
+- **Module-level AudioContext singleton (01-02)**: Prevents context closure on component unmount (React strict mode). Persists for app lifetime.
+- **Speed percentage format (01-02)**: Display only number above slider (e.g. "75%"), no "Speed:" label per user decision.
+- **Keyboard shortcuts disabled in text inputs (01-02)**: Filter HTMLInputElement/HTMLTextAreaElement/HTMLSelectElement targets.
+- **Always-visible keyboard legend (01-02)**: Fixed bottom-right position, not modal, not toggled.
 
 ### Pending Todos
 
@@ -60,11 +64,13 @@ None yet.
 
 ### Blockers/Concerns
 
-**Phase 1 architectural discipline required:**
+**Phase 1 architectural discipline (COMPLETE):**
 - ✅ Web Audio API timing uses AudioContext.currentTime (verified: no setTimeout/setInterval in 01-01)
 - ✅ AudioNode cleanup implemented (verified: disconnect calls in useAudioPlayer)
 - ✅ Autoplay policy handled (user gesture event listeners in useAudioContext)
-- Dual-playback system requires two AudioBufferSourceNode instances at offset positions (Phase 3)
+- ✅ Module-level singleton AudioContext (verified: survives component unmount in 01-02)
+- ✅ All user decisions implemented (speed format, keyboard filtering, always-visible legend)
+- ✅ Phase 1 complete and user-approved via checkpoint
 
 **Phase 3 critical implementation:**
 - Crossfader via GainNode with smooth value ramping between two playback sources
@@ -79,7 +85,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 01-01-PLAN.md (Audio engine foundation with Web Audio API hooks)
+Stopped at: Completed Phase 1 (01-02-PLAN.md - UI components and keyboard shortcuts)
 Resume file: None
 
-**Next:** Execute 01-02-PLAN.md to complete Phase 1 (UI components and keyboard shortcuts)
+**Next:** Begin Phase 2 (Waveform Visualization) - Execute 02-01-PLAN.md to add visual playback feedback
