@@ -9,6 +9,7 @@ export interface AudioPlayerState {
   playbackRate: number; // 0.5 to 1.0
   volume: number; // 0.0 to 1.0
   fileName: string | null;
+  audioUrl: string | null; // Object URL for Waveform visualization
 }
 
 export interface AudioPlayerControls {

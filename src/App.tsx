@@ -1,6 +1,7 @@
 import { useAudioPlayer } from './hooks/useAudioPlayer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { AudioUpload } from './components/AudioUpload';
+import { Waveform } from './components/Waveform';
 import { PlaybackControls } from './components/PlaybackControls';
 import { SpeedSlider } from './components/SpeedSlider';
 import { KeyboardLegend } from './components/KeyboardLegend';
@@ -14,10 +15,12 @@ function App() {
     playbackRate,
     volume,
     fileName,
+    audioUrl,
     loadFile,
     play,
     pause,
     stop,
+    seek,
     seekRelative,
     setPlaybackRate,
     setVolume,
@@ -57,6 +60,15 @@ function App() {
         onFileLoad={loadFile}
         fileName={fileName}
       />
+
+      {hasFile && (
+        <Waveform
+          audioUrl={audioUrl}
+          currentTime={currentTime}
+          duration={duration}
+          onSeek={seek}
+        />
+      )}
 
       <PlaybackControls
         playbackState={playbackState}

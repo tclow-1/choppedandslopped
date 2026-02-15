@@ -14,6 +14,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const [playbackRate, setPlaybackRateState] = useState(1.0);
   const [volume, setVolumeState] = useState(1.0);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   // Mutable audio objects (refs)
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
@@ -22,6 +23,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const startTimeRef = useRef(0); // AudioContext.currentTime when playback started
   const startOffsetRef = useRef(0); // Position in buffer where playback started
   const animationFrameRef = useRef<number | null>(null);
+  const audioUrlRef = useRef<string | null>(null); // Track Object URL for cleanup
 
   // Load audio file
   const loadFile = useCallback(async (file: File) => {
@@ -35,6 +37,15 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
       setPlaybackState('idle');
       setCurrentTime(0);
       startOffsetRef.current = 0;
+
+      // Revoke previous Object URL to prevent memory leak
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+      }
+      // Create Object URL for Waveform visualization
+      const url = URL.createObjectURL(file);
+      audioUrlRef.current = url;
+      setAudioUrl(url);
     } catch (err) {
       console.error('Failed to load audio file:', err);
       throw err;
@@ -226,6 +237,11 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
         sourceNodeRef.current.disconnect();
       }
       stopPositionTracking();
+
+      // Revoke Object URL
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+      }
     };
   }, [stopPositionTracking]);
 
@@ -237,6 +253,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     playbackRate,
     volume,
     fileName,
+    audioUrl,
     // Controls
     loadFile,
     play,
