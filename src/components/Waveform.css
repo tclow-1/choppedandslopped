@@ -1,0 +1,9 @@
+.waveform-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
