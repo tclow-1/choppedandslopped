@@ -18,6 +18,8 @@ export function Waveform({
 }: WaveformProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
+  const lastSeekTimeRef = useRef<number>(0); // Track last seek time for debouncing
+  const isUserSeekingRef = useRef(false); // Track if user is actively seeking
 
   const { wavesurfer } = useWavesurfer({
     container: containerRef,
@@ -59,7 +61,10 @@ export function Waveform({
     const wsDuration = wavesurfer.getDuration();
     if (wsDuration <= 0) return;
 
-    // Only sync if wavesurfer's time differs significantly (avoid feedback loops)
+    // Skip update if user is actively seeking to prevent feedback loop
+    if (isUserSeekingRef.current) return;
+
+    // Sync cursor position from Phase 1 currentTime
     wavesurfer.setTime(currentTime);
   }, [wavesurfer, isReady, currentTime]);
 
@@ -68,7 +73,22 @@ export function Waveform({
     if (!wavesurfer) return;
 
     const handleSeeking = (seekTime: number) => {
+      const now = Date.now();
+
+      // Debounce: ignore seeks within 100ms to prevent rapid-fire calls
+      if (now - lastSeekTimeRef.current < 100) return;
+      lastSeekTimeRef.current = now;
+
+      // Mark user as actively seeking
+      isUserSeekingRef.current = true;
+
+      // Call Phase 1 seek
       onSeek?.(seekTime);
+
+      // Clear seeking flag after short delay to allow cursor sync to resume
+      setTimeout(() => {
+        isUserSeekingRef.current = false;
+      }, 150);
     };
 
     wavesurfer.on('seeking', handleSeeking);
