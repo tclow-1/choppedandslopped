@@ -137,9 +137,16 @@ export async function loadYoutubeAudio(
     throw new Error('All Invidious instances failed. YouTube may be unavailable.');
   }
 
-  // Stage 3: Download audio stream (also wrapped in CORS proxy)
+  // Stage 3: Download audio stream
+  // Try direct fetch first (Google CDN may have CORS headers)
   onProgress?.('Downloading audio...');
-  const audioResponse = await fetch(proxiedUrl(audioStreamUrl));
+  let audioResponse = await fetch(audioStreamUrl);
+
+  // If direct fetch fails with CORS, try with proxy
+  if (!audioResponse.ok && audioResponse.status === 0) {
+    console.log('Direct audio fetch failed, trying with CORS proxy...');
+    audioResponse = await fetch(proxiedUrl(audioStreamUrl));
+  }
 
   if (!audioResponse.ok) {
     throw new Error(`Failed to download audio: HTTP ${audioResponse.status}`);
