@@ -21,9 +21,9 @@ export function KeyboardLegend() {
           <kbd>→</kbd>
           <span>Seek +5s</span>
         </div>
-        <div className="shortcut-item disabled">
+        <div className="shortcut-item">
           <kbd>Shift</kbd>
-          <span>Chop (coming soon)</span>
+          <span>Chop</span>
         </div>
       </div>
     </div>

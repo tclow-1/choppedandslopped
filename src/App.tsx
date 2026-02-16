@@ -5,6 +5,7 @@ import { AudioUpload } from './components/AudioUpload';
 import { Waveform } from './components/Waveform';
 import { PlaybackControls } from './components/PlaybackControls';
 import { SpeedSlider } from './components/SpeedSlider';
+import { OffsetSlider } from './components/OffsetSlider';
 import { KeyboardLegend } from './components/KeyboardLegend';
 import './App.css';
 
@@ -25,23 +26,30 @@ function App() {
     seekRelative,
     setPlaybackRate,
     setVolume,
+    toggleChop,
+    setChopOffset,
+    chopOffset,
   } = useAudioPlayer();
 
   const hasFile = fileName !== null;
 
-  // Chop markers state - Phase 3 will populate this array
+  // Chop markers state - populated during live performance
   const [chopMarkerTimes, setChopMarkerTimes] = useState<number[]>([]);
 
-  // Wrap loadFile to clear markers on new file load
+  // Wrap loadFile to clear markers and reset crossfader on new file load
   const handleFileLoad = async (file: File) => {
     setChopMarkerTimes([]); // Clear markers on new file
     await loadFile(file);
+    // Per user decision: reset to main position on new file load
+    // Offset slider value persists (not reset)
+    // Note: useDualPlayback's activePositionRef defaults to 'main',
+    // and loadFile triggers new buffer which reinitializes the hook
+  };
 
-    // DEV TEST: Add test markers for checkpoint verification
-    // Phase 3 will populate this array during live performance
-    setTimeout(() => {
-      setChopMarkerTimes([2, 5, 10]); // Add markers at 2s, 5s, 10s for testing
-    }, 500);
+  // Wrap stop to also clear chop markers
+  const handleStop = () => {
+    stop();
+    setChopMarkerTimes([]);
   };
 
   // Keyboard shortcuts
@@ -53,7 +61,7 @@ function App() {
     },
     'Home': () => {
       if (hasFile) {
-        stop();
+        handleStop();
       }
     },
     'ArrowLeft': () => {
@@ -64,6 +72,14 @@ function App() {
     'ArrowRight': () => {
       if (hasFile) {
         seekRelative(5);
+      }
+    },
+    'Shift': () => {
+      // Per user decision: chop key only works while audio is playing
+      if (hasFile && playbackState === 'playing') {
+        toggleChop();
+        // Record chop marker at current playback position
+        setChopMarkerTimes(prev => [...prev, currentTime]);
       }
     },
   });
@@ -91,7 +107,7 @@ function App() {
         playbackState={playbackState}
         onPlay={play}
         onPause={pause}
-        onStop={stop}
+        onStop={handleStop}
         volume={volume}
         onVolumeChange={setVolume}
         currentTime={currentTime}
@@ -102,6 +118,12 @@ function App() {
       <SpeedSlider
         playbackRate={playbackRate}
         onPlaybackRateChange={setPlaybackRate}
+        disabled={!hasFile}
+      />
+
+      <OffsetSlider
+        offset={chopOffset}
+        onOffsetChange={setChopOffset}
         disabled={!hasFile}
       />
 
