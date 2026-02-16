@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useMemo } from 'react';
+import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { createDualSources } from '../utils/audioNodes';
 import type { ActivePosition } from '../types/audio';
@@ -42,10 +42,14 @@ export function useDualPlayback(
   // Active position tracked via useRef (NOT useState) to prevent double-toggle bugs
   const activePositionRef = useRef<ActivePosition>('main');
 
-  // Offset tracked via useRef (default 0.5s per user decision)
+  // Offset tracked via useState for reactivity (exposed in return object)
+  // Also tracked in ref for immediate reads in callbacks
+  const [offset, setOffsetState] = useState(0.5);
   const offsetRef = useRef(0.5);
 
-  // Active state tracked via useRef
+  // Active state tracked via useState for reactivity (exposed in return object)
+  // Also tracked in ref for immediate reads in callbacks
+  const [isActive, setIsActiveState] = useState(false);
   const isActiveRef = useRef(false);
 
   // Store onEnded callback in ref to avoid stale closure issues
@@ -81,7 +85,7 @@ export function useDualPlayback(
       aheadGainRef.current.gain.value = 0;  // Start at 0 (silent)
       aheadGainRef.current.connect(masterGainRef.current);
     }
-  }, [audioContext, volume]);
+  }, [audioContext]);
 
   /** Clean up existing source nodes (stop + disconnect + null) */
   const cleanupSources = useCallback(() => {
@@ -149,6 +153,7 @@ export function useDualPlayback(
     mainSourceRef.current = dual.main;
     aheadSourceRef.current = dual.ahead;
     isActiveRef.current = true;
+    setIsActiveState(true);
 
     // Handle onended on main source to detect natural end-of-file
     dual.main.onended = () => {
@@ -156,6 +161,7 @@ export function useDualPlayback(
       if (mainSourceRef.current === dual.main) {
         cleanupSources();
         isActiveRef.current = false;
+        setIsActiveState(false);
         if (onEndedRef.current) {
           onEndedRef.current();
         }
@@ -167,6 +173,7 @@ export function useDualPlayback(
   const stopDual = useCallback(() => {
     cleanupSources();
     isActiveRef.current = false;
+    setIsActiveState(false);
     // Do NOT disconnect GainNodes (they persist)
     // Do NOT reset activePositionRef (preserve crossfader state across stop/start)
   }, [cleanupSources]);
@@ -227,6 +234,7 @@ export function useDualPlayback(
   /** Update the offset value */
   const setOffset = useCallback((newOffset: number) => {
     offsetRef.current = newOffset;
+    setOffsetState(newOffset);
   }, []);
 
   // Volume sync: update masterGain when volume prop changes
@@ -274,7 +282,7 @@ export function useDualPlayback(
     seekDual,
     updatePlaybackRate,
     setOffset,
-    offset: offsetRef.current,
-    isActive: isActiveRef.current,
-  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset]);
+    offset,
+    isActive,
+  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset, offset, isActive]);
 }
