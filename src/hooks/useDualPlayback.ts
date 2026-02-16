@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useMemo } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { createDualSources } from '../utils/audioNodes';
 import type { ActivePosition } from '../types/audio';
@@ -238,24 +238,12 @@ export function useDualPlayback(
     masterGainRef.current.gain.linearRampToValueAtTime(volume, now + 0.05);
   }, [volume, audioContext]);
 
-  // Clean up gain nodes when buffer changes (new file load)
+  // Initialize gain nodes when buffer is loaded
   useEffect(() => {
-    return () => {
-      // Cleanup gain nodes on buffer change
-      if (masterGainRef.current) {
-        masterGainRef.current.disconnect();
-        masterGainRef.current = null;
-      }
-      if (mainGainRef.current) {
-        mainGainRef.current.disconnect();
-        mainGainRef.current = null;
-      }
-      if (aheadGainRef.current) {
-        aheadGainRef.current.disconnect();
-        aheadGainRef.current = null;
-      }
-    };
-  }, [buffer]);  // Runs cleanup when buffer changes
+    if (buffer && audioContext) {
+      ensureGainNodes();
+    }
+  }, [buffer, audioContext, ensureGainNodes]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -279,7 +267,7 @@ export function useDualPlayback(
     };
   }, [cleanupSources]);
 
-  return {
+  return useMemo(() => ({
     startDual,
     stopDual,
     togglePosition,
@@ -288,5 +276,5 @@ export function useDualPlayback(
     setOffset,
     offset: offsetRef.current,
     isActive: isActiveRef.current,
-  };
+  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset]);
 }
