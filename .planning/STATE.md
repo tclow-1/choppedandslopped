@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 ## Current Position
 
-Phase: 3 of 4 (Live Performance)
+Phase: 3.5 of 4 (YouTube Integration)
 Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-02-15 - Completed 03-01-PLAN.md (Dual-playback audio engine)
+Last activity: 2026-02-16 - Completed 3.5-01-PLAN.md (YouTube extraction utilities)
 
-Progress: [█████████████████░░░] 83% (5/6 plans complete)
+Progress: [██████████████████░░] 86% (6/7 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 131 min (2h 11m)
-- Total execution time: 10h 52m
+- Total plans completed: 6
+- Average duration: 111 min (1h 51m)
+- Total execution time: 10h 54m
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: [█████████████████░░░] 83% (5/
 | 1. Audio Foundation | 2/2 | 210 min | 105 min |
 | 2. Waveform Visualization | 2/2 | 756 min | 378 min |
 | 3. Live Performance | 1/2 | 4 min | 4 min |
+| 3.5. YouTube Integration | 1/2 | 2 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (9m), 02-01 (750m), 02-02 (6m), 03-01 (4m)
+- Last 5 plans: 02-01 (750m), 02-02 (6m), 03-01 (4m), 3.5-01 (2m)
 - Trend: Implementation tasks fast, checkpoint iterations add time
 
 *Updated after each plan completion*
@@ -71,6 +72,10 @@ Recent decisions affecting current work:
 - **cancelScheduledValues before gain init (03-01)**: Clears stale setTargetAtTime automation from previous crossfade toggles.
 - **onEnded callback parameter (03-01)**: useDualPlayback signals end-of-file via callback, stored in ref for closure stability.
 - **Live playback rate update (03-01)**: AudioBufferSourceNode.playbackRate is an AudioParam, updated directly without source recreation.
+- **CORS proxy for Invidious API (3.5-01)**: Public Invidious instances lack CORS headers, CORS proxy required for both API calls and audio stream downloads.
+- **Instance rotation for resilience (3.5-01)**: Three Invidious instances with sequential fallback, only fail if all instances fail.
+- **YouTube URL parsing with URL constructor (3.5-01)**: Native URL parsing instead of regex, handles 5 URL formats (watch, youtu.be, embed, shorts, live).
+- **Discriminated union loading states (3.5-01)**: YoutubeLoadState prevents impossible state combinations (loading + error).
 
 ### Pending Todos
 
@@ -103,8 +108,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-15
-Stopped at: Completed 03-01-PLAN.md (Dual-playback audio engine)
+Last session: 2026-02-16
+Stopped at: Completed 3.5-01-PLAN.md (YouTube extraction utilities)
 Resume file: None
 
-**Next:** Execute 03-02-PLAN.md to wire dual-playback UI (Shift key handler, offset slider, state resets)
+**Next:** Execute 3.5-02-PLAN.md to create YouTube input UI and integrate with audio player
