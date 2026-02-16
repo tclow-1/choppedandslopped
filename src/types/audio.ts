@@ -25,4 +25,17 @@ export interface AudioPlayerControls {
   seekRelative: (delta: number) => void;
   setPlaybackRate: (rate: number) => void;
   setVolume: (volume: number) => void;
+  toggleChop: () => void;
+  setChopOffset: (offset: number) => void;
+  chopOffset: number;
+  isDualActive: boolean;
 }
+
+export interface DualSources {
+  main: AudioBufferSourceNode;
+  ahead: AudioBufferSourceNode;
+  mainGain: GainNode;
+  aheadGain: GainNode;
+}
+
+export type ActivePosition = 'main' | 'ahead';
