@@ -29,7 +29,7 @@ export function Waveform({
     progressColor: '#383351',    // Darker purple for played portion
     cursorColor: '#ff4444',      // Red playback cursor - high visibility
     cursorWidth: 2,
-    height: 128,
+    height: 48,                  // Reduced from 128 to 48
     barWidth: 2,
     barGap: 1,
     barRadius: 2,

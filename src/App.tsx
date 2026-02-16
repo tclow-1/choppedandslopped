@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { AudioUpload } from './components/AudioUpload';
+import { VinylDisc } from './components/VinylDisc';
 import { Waveform } from './components/Waveform';
 import { PlaybackControls } from './components/PlaybackControls';
 import { SpeedSlider } from './components/SpeedSlider';
@@ -94,13 +95,7 @@ function App() {
       />
 
       {hasFile && (
-        <Waveform
-          audioUrl={audioUrl}
-          currentTime={currentTime}
-          duration={duration}
-          onSeek={seek}
-          chopMarkerTimes={chopMarkerTimes}
-        />
+        <VinylDisc playbackState={playbackState} />
       )}
 
       <PlaybackControls
@@ -126,6 +121,16 @@ function App() {
         onOffsetChange={setChopOffset}
         disabled={!hasFile}
       />
+
+      {hasFile && (
+        <Waveform
+          audioUrl={audioUrl}
+          currentTime={currentTime}
+          duration={duration}
+          onSeek={seek}
+          chopMarkerTimes={chopMarkerTimes}
+        />
+      )}
 
       <KeyboardLegend />
     </div>
