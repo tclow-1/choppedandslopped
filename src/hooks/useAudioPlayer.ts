@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAudioContext } from './useAudioContext';
+import { useDualPlayback } from './useDualPlayback';
 import { loadAudioFile } from '../utils/audioLoader';
-import { createSourceNode } from '../utils/audioNodes';
 import type { PlaybackState, AudioPlayerState, AudioPlayerControls } from '../types/audio';
 
 export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
@@ -16,14 +16,33 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const [fileName, setFileName] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
-  // Mutable audio objects (refs)
-  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
+  // AudioBuffer tracked in both ref (for synchronous access) and state (for useDualPlayback re-init)
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
+
+  // Mutable tracking refs
   const startTimeRef = useRef(0); // AudioContext.currentTime when playback started
   const startOffsetRef = useRef(0); // Position in buffer where playback started
   const animationFrameRef = useRef<number | null>(null);
   const audioUrlRef = useRef<string | null>(null); // Track Object URL for cleanup
+
+  // Ref to track playbackRate for position calculation in callbacks
+  const playbackRateRef = useRef(playbackRate);
+  playbackRateRef.current = playbackRate;
+
+  // Ref for animation frame cleanup to avoid circular dependency with handleDualEnded
+  const stopTrackingRef = useRef<() => void>(() => {});
+
+  // onEnded callback for dual playback - signals natural end-of-file
+  const handleDualEnded = useCallback(() => {
+    setPlaybackState('idle');
+    setCurrentTime(0);
+    startOffsetRef.current = 0;
+    stopTrackingRef.current();
+  }, []);
+
+  // Initialize dual playback engine
+  const dual = useDualPlayback(audioBuffer, playbackRate, volume, handleDualEnded);
 
   // Load audio file
   const loadFile = useCallback(async (file: File) => {
@@ -32,6 +51,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     try {
       const buffer = await loadAudioFile(file, audioContext);
       audioBufferRef.current = buffer;
+      setAudioBuffer(buffer);
       setDuration(buffer.duration);
       setFileName(file.name);
       setPlaybackState('idle');
@@ -56,14 +76,14 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const updatePosition = useCallback(() => {
     if (!audioContext || playbackState !== 'playing') return;
 
-    const elapsed = (audioContext.currentTime - startTimeRef.current) * playbackRate;
+    const elapsed = (audioContext.currentTime - startTimeRef.current) * playbackRateRef.current;
     const position = startOffsetRef.current + elapsed;
 
     if (position < duration) {
       setCurrentTime(position);
       animationFrameRef.current = requestAnimationFrame(updatePosition);
     }
-  }, [audioContext, playbackState, playbackRate, duration]);
+  }, [audioContext, playbackState, duration]);
 
   // Start position tracking loop
   const startPositionTracking = useCallback(() => {
@@ -81,97 +101,50 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     }
   }, []);
 
+  // Keep stopTrackingRef in sync with latest stopPositionTracking
+  stopTrackingRef.current = stopPositionTracking;
+
   // Play
   const play = useCallback(() => {
     if (!audioContext || !audioBufferRef.current) return;
 
-    // Stop and cleanup previous source
-    if (sourceNodeRef.current) {
-      try {
-        sourceNodeRef.current.stop();
-      } catch (e) {
-        // Ignore if already stopped
-      }
-      sourceNodeRef.current.disconnect();
-    }
+    // Start dual playback from current offset
+    dual.startDual(startOffsetRef.current);
 
-    // Create GainNode if not exists
-    if (!gainNodeRef.current) {
-      gainNodeRef.current = audioContext.createGain();
-      gainNodeRef.current.connect(audioContext.destination);
-    }
-
-    // Set gain to current volume using scheduled method
-    const now = audioContext.currentTime;
-    gainNodeRef.current.gain.setValueAtTime(volume, now);
-
-    // Create new source node
-    const source = createSourceNode(audioContext, audioBufferRef.current, playbackRate);
-    source.connect(gainNodeRef.current);
-
-    // Start at correct offset
-    source.start(0, startOffsetRef.current);
+    // Track timing for position calculation
     startTimeRef.current = audioContext.currentTime;
 
-    sourceNodeRef.current = source;
     setPlaybackState('playing');
-
-    // Handle onended for cleanup
-    source.onended = () => {
-      if (sourceNodeRef.current === source) {
-        source.disconnect();
-        sourceNodeRef.current = null;
-        setPlaybackState('idle');
-        setCurrentTime(0);
-        startOffsetRef.current = 0;
-        stopPositionTracking();
-      }
-    };
-
-    // Start position tracking
     startPositionTracking();
-  }, [audioContext, playbackRate, volume, startPositionTracking, stopPositionTracking]);
+  }, [audioContext, dual, startPositionTracking]);
 
   // Pause
   const pause = useCallback(() => {
-    if (!audioContext || !sourceNodeRef.current) return;
+    if (!audioContext) return;
 
     // Calculate current position
-    const elapsed = (audioContext.currentTime - startTimeRef.current) * playbackRate;
+    const elapsed = (audioContext.currentTime - startTimeRef.current) * playbackRateRef.current;
     const position = startOffsetRef.current + elapsed;
     startOffsetRef.current = Math.min(position, duration);
     setCurrentTime(startOffsetRef.current);
 
-    // Stop and disconnect source
-    try {
-      sourceNodeRef.current.stop();
-    } catch (e) {
-      // Ignore if already stopped
-    }
-    sourceNodeRef.current.disconnect();
-    sourceNodeRef.current = null;
+    // Stop dual playback
+    dual.stopDual();
 
     setPlaybackState('paused');
     stopPositionTracking();
-  }, [audioContext, playbackRate, duration, stopPositionTracking]);
+  }, [audioContext, duration, dual, stopPositionTracking]);
 
   // Stop
   const stop = useCallback(() => {
-    if (sourceNodeRef.current) {
-      try {
-        sourceNodeRef.current.stop();
-      } catch (e) {
-        // Ignore if already stopped
-      }
-      sourceNodeRef.current.disconnect();
-      sourceNodeRef.current = null;
-    }
+    // Stop dual playback
+    dual.stopDual();
 
     startOffsetRef.current = 0;
     setCurrentTime(0);
     setPlaybackState('idle');
     stopPositionTracking();
-  }, [stopPositionTracking]);
+  }, [dual, stopPositionTracking]);
 
   // Seek
   const seek = useCallback((time: number) => {
@@ -179,21 +152,12 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     startOffsetRef.current = clampedTime;
     setCurrentTime(clampedTime);
 
-    if (playbackState === 'playing') {
-      // Explicitly stop and cleanup current source BEFORE calling play()
-      if (sourceNodeRef.current) {
-        try {
-          sourceNodeRef.current.stop();
-        } catch (e) {
-          // Ignore if already stopped
-        }
-        sourceNodeRef.current.disconnect();
-        sourceNodeRef.current = null;
-      }
-      // Now restart playback at new position with clean state
-      play();
+    if (playbackState === 'playing' && audioContext) {
+      // seekDual handles cleanup and restart, preserving crossfader state
+      dual.seekDual(clampedTime);
+      startTimeRef.current = audioContext.currentTime;
     }
-  }, [duration, playbackState, play]);
+  }, [duration, playbackState, audioContext, dual]);
 
   // Seek relative
   const seekRelative = useCallback((delta: number) => {
@@ -211,41 +175,31 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     setPlaybackRateState(snappedRate);
 
     if (playbackState === 'playing' && audioContext) {
-      // Calculate current position first
-      const elapsed = (audioContext.currentTime - startTimeRef.current) * playbackRate;
+      // Calculate current position from elapsed time
+      const elapsed = (audioContext.currentTime - startTimeRef.current) * playbackRateRef.current;
       const position = startOffsetRef.current + elapsed;
       startOffsetRef.current = Math.min(position, duration);
       setCurrentTime(startOffsetRef.current);
 
-      // Restart with new rate
-      play();
-    }
-  }, [audioContext, playbackState, playbackRate, duration, play]);
+      // Update start time reference for new rate calculation
+      startTimeRef.current = audioContext.currentTime;
 
-  // Set volume (with smooth ramping)
+      // Update rate on both sources live (no recreation needed)
+      dual.updatePlaybackRate(snappedRate);
+    }
+  }, [audioContext, playbackState, duration, dual]);
+
+  // Set volume (with smooth ramping handled by useDualPlayback via useEffect)
   const setVolume = useCallback((vol: number) => {
     const clampedVolume = Math.max(0.0, Math.min(1.0, vol));
     setVolumeState(clampedVolume);
-
-    if (gainNodeRef.current && audioContext) {
-      const now = audioContext.currentTime;
-      // Use linearRampToValueAtTime to support true silence at 0
-      gainNodeRef.current.gain.setValueAtTime(gainNodeRef.current.gain.value, now);
-      gainNodeRef.current.gain.linearRampToValueAtTime(clampedVolume, now + 0.05);
-    }
-  }, [audioContext]);
+    // Volume sync to masterGain is handled by useDualPlayback's volume useEffect
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (sourceNodeRef.current) {
-        try {
-          sourceNodeRef.current.stop();
-        } catch (e) {
-          // Ignore if already stopped
-        }
-        sourceNodeRef.current.disconnect();
-      }
+      dual.stopDual();
       stopPositionTracking();
 
       // Revoke Object URL
@@ -253,7 +207,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
         URL.revokeObjectURL(audioUrlRef.current);
       }
     };
-  }, [stopPositionTracking]);
+  }, [dual, stopPositionTracking]);
 
   return {
     // State
@@ -273,5 +227,10 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     seekRelative,
     setPlaybackRate,
     setVolume,
+    // Dual playback controls (for Phase 3 UI wiring)
+    toggleChop: dual.togglePosition,
+    setChopOffset: dual.setOffset,
+    chopOffset: dual.offset,
+    isDualActive: dual.isActive,
   };
 }
