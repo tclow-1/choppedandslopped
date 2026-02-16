@@ -6,17 +6,8 @@ interface PlaybackControlsProps {
   onPlay: () => void;
   onPause: () => void;
   onStop: () => void;
-  volume: number;
-  onVolumeChange: (v: number) => void;
-  currentTime: number;
-  duration: number;
+  onChop: () => void;
   disabled: boolean;
-}
-
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 export function PlaybackControls({
@@ -24,10 +15,7 @@ export function PlaybackControls({
   onPlay,
   onPause,
   onStop,
-  volume,
-  onVolumeChange,
-  currentTime,
-  duration,
+  onChop,
   disabled
 }: PlaybackControlsProps) {
   const isPlaying = playbackState === 'playing';
@@ -49,24 +37,13 @@ export function PlaybackControls({
         >
           Stop
         </button>
-      </div>
-
-      <div className="time-display">
-        <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
-      </div>
-
-      <div className="volume-control">
-        <label htmlFor="volume-slider">Volume</label>
-        <input
-          id="volume-slider"
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={volume}
-          onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-          disabled={disabled}
-        />
+        <button
+          onClick={onChop}
+          disabled={disabled || !isPlaying}
+          className="control-button"
+        >
+          Chop
+        </button>
       </div>
     </div>
   );

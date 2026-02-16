@@ -23,24 +23,14 @@
   }
 }
 
-.vinyl-disc-dual.spinning {
+/* Apply spinning to individual disc groups */
+.disc-spinning {
   animation: spin 2s linear infinite;
 }
 
-/* Glow pulse animation for highlighted disc */
-@keyframes glow-pulse {
-  0%, 100% {
-    opacity: 0.4;
-    stroke-width: 4;
-  }
-  50% {
-    opacity: 0.8;
-    stroke-width: 8;
-  }
-}
-
+/* Solid highlight for active disc */
 .disc-glow {
-  animation: glow-pulse 1.5s ease-in-out infinite;
+  /* No animation - just a solid highlight ring */
 }
 
 /* Subtle shadow for depth */

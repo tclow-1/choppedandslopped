@@ -9,9 +9,11 @@ interface VinylDiscProps {
 export function VinylDisc({ playbackState, isChopped }: VinylDiscProps) {
   const isSpinning = playbackState === 'playing';
 
-  const renderDisc = (cx: number, isHighlighted: boolean, label: string) => (
-    <g className={isHighlighted ? 'disc-highlighted' : ''}>
-      {/* Glow effect when highlighted */}
+  console.log('[VinylDisc] isChopped:', isChopped, 'playbackState:', playbackState);
+
+  const renderDisc = (cx: number, isHighlighted: boolean, topLabel: string, bottomLabel: string) => (
+    <g>
+      {/* Glow effect when highlighted (non-spinning) */}
       {isHighlighted && (
         <circle
           cx={cx}
@@ -25,73 +27,76 @@ export function VinylDisc({ playbackState, isChopped }: VinylDiscProps) {
         />
       )}
 
-      {/* Outer black vinyl disc */}
-      <circle cx={cx} cy="128" r="120" fill="#1a1a1a" stroke="#0a0a0a" strokeWidth="2" />
+      {/* Spinning disc group */}
+      <g className={isSpinning ? 'disc-spinning' : ''} style={{ transformOrigin: `${cx}px 128px` }}>
+        {/* Outer black vinyl disc */}
+        <circle cx={cx} cy="128" r="120" fill="#1a1a1a" stroke="#0a0a0a" strokeWidth="2" />
 
-      {/* Grooves (concentric circles) */}
-      {[110, 100, 90, 80, 70, 60, 50].map((radius) => (
-        <circle
-          key={radius}
-          cx={cx}
-          cy="128"
-          r={radius}
-          fill="none"
-          stroke="#0a0a0a"
-          strokeWidth="0.5"
-          opacity="0.3"
-        />
-      ))}
+        {/* Grooves (concentric circles) */}
+        {[110, 100, 90, 80, 70, 60, 50].map((radius) => (
+          <circle
+            key={radius}
+            cx={cx}
+            cy="128"
+            r={radius}
+            fill="none"
+            stroke="#0a0a0a"
+            strokeWidth="0.5"
+            opacity="0.3"
+          />
+        ))}
 
-      {/* Purple center label */}
-      <circle cx={cx} cy="128" r="45" fill="url(#labelGradient)" />
+        {/* Purple center label */}
+        <circle cx={cx} cy="128" r="45" fill="url(#labelGradient)" />
 
-      {/* Center hole */}
-      <circle cx={cx} cy="128" r="8" fill="#0a0a0a" />
+        {/* Center hole */}
+        <circle cx={cx} cy="128" r="8" fill="#0a0a0a" />
 
-      {/* Label text - top */}
-      <text
-        x={cx}
-        y="108"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fill="#fff"
-        fontSize="10"
-        fontWeight="700"
-        letterSpacing="1.5"
-      >
-        {label}
-      </text>
+        {/* Label text - top */}
+        <text
+          x={cx}
+          y="108"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#fff"
+          fontSize="10"
+          fontWeight="700"
+          letterSpacing="1.5"
+        >
+          {topLabel}
+        </text>
 
-      {/* Label text - bottom */}
-      <text
-        x={cx}
-        y="148"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fill="#fff"
-        fontSize="10"
-        fontWeight="700"
-        letterSpacing="1.5"
-      >
-        SLOPPED
-      </text>
+        {/* Label text - bottom */}
+        <text
+          x={cx}
+          y="148"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#fff"
+          fontSize="10"
+          fontWeight="700"
+          letterSpacing="1.5"
+        >
+          {bottomLabel}
+        </text>
+      </g>
     </g>
   );
 
   return (
     <div className="vinyl-disc-container-dual">
       <svg
-        className={`vinyl-disc-dual ${isSpinning ? 'spinning' : ''}`}
+        className="vinyl-disc-dual"
         width="560"
         height="256"
         viewBox="0 0 560 256"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Left disc - MAIN (active when not chopped) */}
-        {renderDisc(140, !isChopped, 'MAIN')}
+        {renderDisc(140, !isChopped, 'CHOPPED', 'UP')}
 
         {/* Right disc - AHEAD (active when chopped) */}
-        {renderDisc(420, isChopped, 'AHEAD')}
+        {renderDisc(420, isChopped, 'SLOPPED', 'UP')}
 
         {/* Gradient definition */}
         <defs>

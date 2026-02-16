@@ -6,6 +6,7 @@ import { VinylDisc } from './components/VinylDisc';
 import { Waveform } from './components/Waveform';
 import { PlaybackControls } from './components/PlaybackControls';
 import { SpeedSlider } from './components/SpeedSlider';
+import { VolumeSlider } from './components/VolumeSlider';
 import { OffsetSlider } from './components/OffsetSlider';
 import { KeyboardLegend } from './components/KeyboardLegend';
 import './App.css';
@@ -30,7 +31,7 @@ function App() {
     toggleChop,
     setChopOffset,
     chopOffset,
-    isDualActive,
+    chopPosition,
   } = useAudioPlayer();
 
   const hasFile = fileName !== null;
@@ -56,7 +57,7 @@ function App() {
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
-    ' ': () => {
+    'Enter': () => {
       if (hasFile) {
         playbackState === 'playing' ? pause() : play();
       }
@@ -76,8 +77,8 @@ function App() {
         seekRelative(5);
       }
     },
-    'Shift': () => {
-      // Per user decision: chop key only works while audio is playing
+    ' ': () => {
+      // Chop key only works while audio is playing
       if (hasFile && playbackState === 'playing') {
         toggleChop();
         // Record chop marker at current playback position
@@ -88,7 +89,7 @@ function App() {
 
   return (
     <div className="app-container" tabIndex={0}>
-      <h1>ChoppedApp</h1>
+      <h1>Chopped & Slopped App</h1>
 
       <AudioUpload
         onFileLoad={handleFileLoad}
@@ -96,7 +97,7 @@ function App() {
       />
 
       {hasFile && (
-        <VinylDisc playbackState={playbackState} isChopped={isDualActive} />
+        <VinylDisc playbackState={playbackState} isChopped={chopPosition === 'ahead'} />
       )}
 
       <PlaybackControls
@@ -104,10 +105,18 @@ function App() {
         onPlay={play}
         onPause={pause}
         onStop={handleStop}
+        onChop={() => {
+          if (playbackState === 'playing') {
+            toggleChop();
+            setChopMarkerTimes(prev => [...prev, currentTime]);
+          }
+        }}
+        disabled={!hasFile}
+      />
+
+      <VolumeSlider
         volume={volume}
         onVolumeChange={setVolume}
-        currentTime={currentTime}
-        duration={duration}
         disabled={!hasFile}
       />
 

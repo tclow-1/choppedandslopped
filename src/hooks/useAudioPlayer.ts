@@ -11,7 +11,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRateState] = useState(1.0);
+  const [playbackRate, setPlaybackRateState] = useState(0.75);
   const [volume, setVolumeState] = useState(1.0);
   const [fileName, setFileName] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -271,5 +271,6 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     setChopOffset: dual.setOffset,
     chopOffset: dual.offset,
     isDualActive: dual.isActive,
+    chopPosition: dual.activePosition,
   };
 }

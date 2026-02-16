@@ -39,8 +39,10 @@ export function useDualPlayback(
   const mainSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const aheadSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
-  // Active position tracked via useRef (NOT useState) to prevent double-toggle bugs
+  // Active position tracked via both ref and state
+  // Ref for immediate reads, state for reactivity
   const activePositionRef = useRef<ActivePosition>('main');
+  const [activePosition, setActivePosition] = useState<ActivePosition>('main');
 
   // Offset tracked via useState for reactivity (exposed in return object)
   // Also tracked in ref for immediate reads in callbacks
@@ -200,8 +202,9 @@ export function useDualPlayback(
     const current = activePositionRef.current;
     const newPosition: ActivePosition = current === 'main' ? 'ahead' : 'main';
 
-    // Write new value immediately
+    // Write new value immediately to both ref and state
     activePositionRef.current = newPosition;
+    setActivePosition(newPosition);
 
     // Apply crossfade using setTargetAtTime with 0.015 time constant (15ms decay)
     const now = audioContext.currentTime;
@@ -284,5 +287,6 @@ export function useDualPlayback(
     setOffset,
     offset,
     isActive,
-  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset, offset, isActive]);
+    activePosition,
+  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset, offset, isActive, activePosition]);
 }

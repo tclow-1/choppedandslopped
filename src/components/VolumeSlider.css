@@ -1,4 +1,4 @@
-.offset-slider {
+.volume-slider {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,7 +9,7 @@
   margin: 1rem 0;
 }
 
-.offset-value {
+.volume-value {
   font-size: 1.25rem;
   font-weight: 700;
   color: #4F4A85;
@@ -17,13 +17,13 @@
   text-align: center;
 }
 
-.offset-slider label {
+.volume-slider label {
   font-size: 0.9rem;
   color: #ccc;
   font-weight: 500;
 }
 
-.offset-slider input[type="range"] {
+.volume-slider input[type="range"] {
   width: 100%;
   max-width: 400px;
   height: 6px;
@@ -33,7 +33,7 @@
   cursor: pointer;
 }
 
-.offset-slider input[type="range"]::-webkit-slider-thumb {
+.volume-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 18px;
@@ -44,11 +44,11 @@
   transition: transform 0.15s ease;
 }
 
-.offset-slider input[type="range"]::-webkit-slider-thumb:hover {
+.volume-slider input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
 
-.offset-slider input[type="range"]::-moz-range-thumb {
+.volume-slider input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
   background: #4F4A85;
@@ -58,11 +58,11 @@
   transition: transform 0.15s ease;
 }
 
-.offset-slider input[type="range"]::-moz-range-thumb:hover {
+.volume-slider input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.2);
 }
 
-.offset-slider input[type="range"]:disabled {
+.volume-slider input[type="range"]:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

@@ -10,15 +10,15 @@ export function OffsetSlider({ offset, onOffsetChange, disabled }: OffsetSliderP
   return (
     <div className="offset-slider">
       <div className="offset-value">
-        {offset.toFixed(1)}s
+        {offset.toFixed(2)}s
       </div>
       <label htmlFor="offset-slider">Chop Offset</label>
       <input
         id="offset-slider"
         type="range"
-        min="0.1"
-        max="0.5"
-        step="0.1"
+        min="0.2"
+        max="0.4"
+        step="0.01"
         value={offset}
         onChange={(e) => onOffsetChange(parseFloat(e.target.value))}
         disabled={disabled}

@@ -6,7 +6,7 @@ export function KeyboardLegend() {
       <h3>Keyboard Shortcuts</h3>
       <div className="shortcut-list">
         <div className="shortcut-item">
-          <kbd>Space</kbd>
+          <kbd>Enter</kbd>
           <span>Play/Pause</span>
         </div>
         <div className="shortcut-item">
@@ -22,7 +22,7 @@ export function KeyboardLegend() {
           <span>Seek +5s</span>
         </div>
         <div className="shortcut-item">
-          <kbd>Shift</kbd>
+          <kbd>Space</kbd>
           <span>Chop</span>
         </div>
       </div>
