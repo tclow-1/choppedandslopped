@@ -79,7 +79,7 @@ export function useDualPlayback(
       aheadGainRef.current = audioContext.createGain();
       aheadGainRef.current.connect(masterGainRef.current);
     }
-  }, [audioContext, volume]);
+  }, [audioContext]);
 
   /** Clean up existing source nodes (stop + disconnect + null) */
   const cleanupSources = useCallback(() => {
@@ -97,7 +97,14 @@ export function useDualPlayback(
 
   /** Start dual playback from a position */
   const startDual = useCallback((startPosition: number) => {
-    if (!audioContext || !bufferRef.current) return;
+    if (!audioContext) {
+      console.error('[useDualPlayback] startDual failed: audioContext is null');
+      return;
+    }
+    if (!bufferRef.current) {
+      console.error('[useDualPlayback] startDual failed: buffer is null');
+      return;
+    }
 
     // Clean up any existing sources first
     cleanupSources();

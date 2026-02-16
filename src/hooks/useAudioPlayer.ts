@@ -58,6 +58,12 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
       setCurrentTime(0);
       startOffsetRef.current = 0;
 
+      console.log('[useAudioPlayer] File loaded:', {
+        fileName: file.name,
+        duration: buffer.duration,
+        bufferSet: !!audioBufferRef.current
+      });
+
       // Revoke previous Object URL to prevent memory leak
       if (audioUrlRef.current) {
         URL.revokeObjectURL(audioUrlRef.current);
@@ -67,7 +73,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
       audioUrlRef.current = url;
       setAudioUrl(url);
     } catch (err) {
-      console.error('Failed to load audio file:', err);
+      console.error('[useAudioPlayer] Failed to load audio file:', err);
       throw err;
     }
   }, [audioContext]);
@@ -107,6 +113,13 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   // Play
   const play = useCallback(() => {
     if (!audioContext || !audioBufferRef.current) return;
+
+    // Resume AudioContext if suspended (autoplay policy)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(err => {
+        console.error('[useAudioPlayer] Failed to resume AudioContext:', err);
+      });
+    }
 
     // Start dual playback from current offset
     dual.startDual(startOffsetRef.current);
