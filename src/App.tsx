@@ -30,6 +30,7 @@ function App() {
     toggleChop,
     setChopOffset,
     chopOffset,
+    isDualActive,
   } = useAudioPlayer();
 
   const hasFile = fileName !== null;
@@ -95,7 +96,7 @@ function App() {
       />
 
       {hasFile && (
-        <VinylDisc playbackState={playbackState} />
+        <VinylDisc playbackState={playbackState} isChopped={isDualActive} />
       )}
 
       <PlaybackControls

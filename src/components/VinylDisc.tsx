@@ -3,56 +3,95 @@ import './VinylDisc.css';
 
 interface VinylDiscProps {
   playbackState: PlaybackState;
+  isChopped: boolean; // true when ahead source is active (chopped)
 }
 
-export function VinylDisc({ playbackState }: VinylDiscProps) {
+export function VinylDisc({ playbackState, isChopped }: VinylDiscProps) {
   const isSpinning = playbackState === 'playing';
 
+  const renderDisc = (cx: number, isHighlighted: boolean, label: string) => (
+    <g className={isHighlighted ? 'disc-highlighted' : ''}>
+      {/* Glow effect when highlighted */}
+      {isHighlighted && (
+        <circle
+          cx={cx}
+          cy="128"
+          r="125"
+          fill="none"
+          stroke="#4F4A85"
+          strokeWidth="6"
+          opacity="0.6"
+          className="disc-glow"
+        />
+      )}
+
+      {/* Outer black vinyl disc */}
+      <circle cx={cx} cy="128" r="120" fill="#1a1a1a" stroke="#0a0a0a" strokeWidth="2" />
+
+      {/* Grooves (concentric circles) */}
+      {[110, 100, 90, 80, 70, 60, 50].map((radius) => (
+        <circle
+          key={radius}
+          cx={cx}
+          cy="128"
+          r={radius}
+          fill="none"
+          stroke="#0a0a0a"
+          strokeWidth="0.5"
+          opacity="0.3"
+        />
+      ))}
+
+      {/* Purple center label */}
+      <circle cx={cx} cy="128" r="45" fill="url(#labelGradient)" />
+
+      {/* Center hole */}
+      <circle cx={cx} cy="128" r="8" fill="#0a0a0a" />
+
+      {/* Label text - top */}
+      <text
+        x={cx}
+        y="108"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill="#fff"
+        fontSize="10"
+        fontWeight="700"
+        letterSpacing="1.5"
+      >
+        {label}
+      </text>
+
+      {/* Label text - bottom */}
+      <text
+        x={cx}
+        y="148"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill="#fff"
+        fontSize="10"
+        fontWeight="700"
+        letterSpacing="1.5"
+      >
+        SLOPPED
+      </text>
+    </g>
+  );
+
   return (
-    <div className="vinyl-disc-container">
+    <div className="vinyl-disc-container-dual">
       <svg
-        className={`vinyl-disc ${isSpinning ? 'spinning' : ''}`}
-        width="256"
+        className={`vinyl-disc-dual ${isSpinning ? 'spinning' : ''}`}
+        width="560"
         height="256"
-        viewBox="0 0 256 256"
+        viewBox="0 0 560 256"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Outer black vinyl disc */}
-        <circle cx="128" cy="128" r="120" fill="#1a1a1a" stroke="#0a0a0a" strokeWidth="2" />
+        {/* Left disc - MAIN (active when not chopped) */}
+        {renderDisc(140, !isChopped, 'MAIN')}
 
-        {/* Grooves (concentric circles) */}
-        {[110, 100, 90, 80, 70, 60, 50].map((radius) => (
-          <circle
-            key={radius}
-            cx="128"
-            cy="128"
-            r={radius}
-            fill="none"
-            stroke="#0a0a0a"
-            strokeWidth="0.5"
-            opacity="0.3"
-          />
-        ))}
-
-        {/* Purple center label */}
-        <circle cx="128" cy="128" r="45" fill="url(#labelGradient)" />
-
-        {/* Center hole */}
-        <circle cx="128" cy="128" r="8" fill="#0a0a0a" />
-
-        {/* Label text */}
-        <text
-          x="128"
-          y="128"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill="#fff"
-          fontSize="12"
-          fontWeight="700"
-          letterSpacing="2"
-        >
-          CHOPPED
-        </text>
+        {/* Right disc - AHEAD (active when chopped) */}
+        {renderDisc(420, isChopped, 'AHEAD')}
 
         {/* Gradient definition */}
         <defs>

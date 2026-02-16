@@ -1,4 +1,4 @@
-.vinyl-disc-container {
+.vinyl-disc-container-dual {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,7 +9,7 @@
   position: relative;
 }
 
-.vinyl-disc {
+.vinyl-disc-dual {
   transition: opacity 0.3s ease;
 }
 
@@ -23,17 +23,33 @@
   }
 }
 
-.vinyl-disc.spinning {
+.vinyl-disc-dual.spinning {
   animation: spin 2s linear infinite;
 }
 
+/* Glow pulse animation for highlighted disc */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    stroke-width: 4;
+  }
+  50% {
+    opacity: 0.8;
+    stroke-width: 8;
+  }
+}
+
+.disc-glow {
+  animation: glow-pulse 1.5s ease-in-out infinite;
+}
+
 /* Subtle shadow for depth */
-.vinyl-disc-container::after {
+.vinyl-disc-container-dual::after {
   content: '';
   position: absolute;
-  width: 256px;
+  width: 560px;
   height: 256px;
-  border-radius: 50%;
+  border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   pointer-events: none;
   z-index: -1;
