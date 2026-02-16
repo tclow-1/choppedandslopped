@@ -1,0 +1,84 @@
+.youtube-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.youtube-input {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.youtube-input input {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #2a2a3e;
+  color: #e0e0e0;
+  border: 1px solid #4F4A85;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.youtube-input input:focus {
+  border-color: #6f64b8;
+}
+
+.youtube-input input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.youtube-input button {
+  padding: 12px 24px;
+  background-color: #4F4A85;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.youtube-input button:hover:not(:disabled) {
+  background-color: #6f64b8;
+}
+
+.youtube-input button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.youtube-status {
+  font-size: 0.85em;
+  color: #a0a0b0;
+  padding: 4px 0;
+}
+
+.youtube-status.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.youtube-status.error {
+  color: #ff4444;
+}
+
+.youtube-validation-error {
+  font-size: 0.85em;
+  color: #ff4444;
+  margin-top: 4px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1.0;
+  }
+}

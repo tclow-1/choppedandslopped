@@ -2,7 +2,72 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { useDualPlayback } from './useDualPlayback';
 import { loadAudioFile } from '../utils/audioLoader';
+import { loadYoutubeAudio } from '../utils/youtubeExtractor';
 import type { PlaybackState, AudioPlayerState, AudioPlayerControls } from '../types/audio';
+import type { YoutubeLoadState } from '../types/youtube';
+
+/**
+ * Convert AudioBuffer to WAV Blob for Waveform visualization
+ * Creates a WAV file in memory from the decoded AudioBuffer
+ */
+function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
+  const numberOfChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const length = buffer.length;
+  const bytesPerSample = 2; // 16-bit PCM
+  const blockAlign = numberOfChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = length * blockAlign;
+  const bufferSize = 44 + dataSize; // WAV header (44 bytes) + data
+
+  const arrayBuffer = new ArrayBuffer(bufferSize);
+  const view = new DataView(arrayBuffer);
+
+  // Helper to write string as ASCII bytes
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  // RIFF chunk descriptor
+  writeString(0, 'RIFF');
+  view.setUint32(4, bufferSize - 8, true); // File size - 8
+  writeString(8, 'WAVE');
+
+  // fmt sub-chunk
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+  view.setUint16(20, 1, true); // AudioFormat (1 for PCM)
+  view.setUint16(22, numberOfChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true); // BitsPerSample
+
+  // data sub-chunk
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  // Write interleaved PCM samples
+  const channelData: Float32Array[] = [];
+  for (let channel = 0; channel < numberOfChannels; channel++) {
+    channelData.push(buffer.getChannelData(channel));
+  }
+
+  let offset = 44;
+  for (let i = 0; i < length; i++) {
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+      // Convert float [-1, 1] to 16-bit signed integer [-32768, 32767]
+      const sample = Math.max(-1, Math.min(1, channelData[channel][i]));
+      const int16 = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+      view.setInt16(offset, int16, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
 
 export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const audioContext = useAudioContext();
@@ -15,6 +80,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   const [volume, setVolumeState] = useState(1.0);
   const [fileName, setFileName] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [youtubeLoadState, setYoutubeLoadState] = useState<YoutubeLoadState>({ status: 'idle' });
 
   // AudioBuffer tracked in both ref (for synchronous access) and state (for useDualPlayback re-init)
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
@@ -78,6 +144,53 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     } catch (err) {
       console.error('[useAudioPlayer] Failed to load audio file:', err);
       throw err;
+    }
+  }, [audioContext]);
+
+  // Load YouTube audio
+  const loadYoutube = useCallback(async (youtubeUrl: string) => {
+    if (!audioContext) return;
+
+    try {
+      setYoutubeLoadState({ status: 'loading', stage: 'Starting...' });
+
+      const { audioBuffer: buffer, title } = await loadYoutubeAudio(
+        youtubeUrl,
+        audioContext,
+        (stage) => setYoutubeLoadState({ status: 'loading', stage })
+      );
+
+      audioBufferRef.current = buffer;
+      setAudioBuffer(buffer);
+      setDuration(buffer.duration);
+      setFileName(title);
+      setPlaybackState('idle');
+      setCurrentTime(0);
+      startOffsetRef.current = 0;
+
+      console.log('[useAudioPlayer] YouTube audio loaded:', {
+        title,
+        duration: buffer.duration,
+        bufferSet: !!audioBufferRef.current
+      });
+
+      // Revoke previous Object URL to prevent memory leak
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+      }
+
+      // Create WAV blob from AudioBuffer for Waveform visualization
+      // Wavesurfer needs a URL to render waveform
+      const wavBlob = audioBufferToWavBlob(buffer);
+      const url = URL.createObjectURL(wavBlob);
+      audioUrlRef.current = url;
+      setAudioUrl(url);
+
+      setYoutubeLoadState({ status: 'success', title });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error loading YouTube audio';
+      setYoutubeLoadState({ status: 'error', error: message });
+      console.error('[useAudioPlayer] YouTube load failed:', err);
     }
   }, [audioContext]);
 
@@ -257,8 +370,10 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     volume,
     fileName,
     audioUrl,
+    youtubeLoadState,
     // Controls
     loadFile,
+    loadYoutube,
     play,
     pause,
     stop,
