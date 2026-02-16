@@ -129,7 +129,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
 
     setPlaybackState('playing');
     startPositionTracking();
-  }, [audioContext, dual, startPositionTracking]);
+  }, [audioContext, dual, startPositionTracking, audioBuffer]);
 
   // Pause
   const pause = useCallback(() => {
@@ -146,7 +146,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
 
     setPlaybackState('paused');
     stopPositionTracking();
-  }, [audioContext, duration, dual, stopPositionTracking]);
+  }, [audioContext, duration, dual, stopPositionTracking, audioBuffer]);
 
   // Stop
   const stop = useCallback(() => {
@@ -157,7 +157,7 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     setCurrentTime(0);
     setPlaybackState('idle');
     stopPositionTracking();
-  }, [dual, stopPositionTracking]);
+  }, [dual, stopPositionTracking, audioBuffer]);
 
   // Seek
   const seek = useCallback((time: number) => {
