@@ -72,14 +72,16 @@ export function useDualPlayback(
 
     if (!mainGainRef.current) {
       mainGainRef.current = audioContext.createGain();
+      mainGainRef.current.gain.value = 1;  // Start at 1 (active)
       mainGainRef.current.connect(masterGainRef.current);
     }
 
     if (!aheadGainRef.current) {
       aheadGainRef.current = audioContext.createGain();
+      aheadGainRef.current.gain.value = 0;  // Start at 0 (silent)
       aheadGainRef.current.connect(masterGainRef.current);
     }
-  }, [audioContext]);
+  }, [audioContext, volume]);
 
   /** Clean up existing source nodes (stop + disconnect + null) */
   const cleanupSources = useCallback(() => {
@@ -173,9 +175,19 @@ export function useDualPlayback(
   const togglePosition = useCallback(() => {
     if (!audioContext) return;
 
+    // Check if dual playback is actually active
+    if (!isActiveRef.current) {
+      console.warn('[useDualPlayback] togglePosition called but dual not active');
+      return;
+    }
+
+    // Check if gain nodes exist
     const mainGain = mainGainRef.current;
     const aheadGain = aheadGainRef.current;
-    if (!mainGain || !aheadGain) return;
+    if (!mainGain || !aheadGain) {
+      console.error('[useDualPlayback] togglePosition failed: gain nodes missing');
+      return;
+    }
 
     // Read activePositionRef synchronously to prevent double-toggle bugs
     const current = activePositionRef.current;
@@ -225,6 +237,25 @@ export function useDualPlayback(
     masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, now);
     masterGainRef.current.gain.linearRampToValueAtTime(volume, now + 0.05);
   }, [volume, audioContext]);
+
+  // Clean up gain nodes when buffer changes (new file load)
+  useEffect(() => {
+    return () => {
+      // Cleanup gain nodes on buffer change
+      if (masterGainRef.current) {
+        masterGainRef.current.disconnect();
+        masterGainRef.current = null;
+      }
+      if (mainGainRef.current) {
+        mainGainRef.current.disconnect();
+        mainGainRef.current = null;
+      }
+      if (aheadGainRef.current) {
+        aheadGainRef.current.disconnect();
+        aheadGainRef.current = null;
+      }
+    };
+  }, [buffer]);  // Runs cleanup when buffer changes
 
   // Cleanup on unmount
   useEffect(() => {

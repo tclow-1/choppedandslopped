@@ -33,6 +33,9 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   // Ref for animation frame cleanup to avoid circular dependency with handleDualEnded
   const stopTrackingRef = useRef<() => void>(() => {});
 
+  // Ref to hold latest updatePosition callback (avoids stale closure in RAF loop)
+  const updatePositionRef = useRef<(() => void) | null>(null);
+
   // onEnded callback for dual playback - signals natural end-of-file
   const handleDualEnded = useCallback(() => {
     setPlaybackState('idle');
@@ -87,9 +90,21 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
 
     if (position < duration) {
       setCurrentTime(position);
-      animationFrameRef.current = requestAnimationFrame(updatePosition);
+      // Call the ref version to get latest closure
+      animationFrameRef.current = requestAnimationFrame(() => {
+        updatePositionRef.current?.();
+      });
+    } else {
+      // End of track
+      dual.stopDual();
+      setPlaybackState('idle');
+      setCurrentTime(duration);
+      startOffsetRef.current = 0;
     }
-  }, [audioContext, playbackState, duration]);
+  }, [audioContext, playbackState, duration, dual]);
+
+  // Keep ref in sync with latest callback
+  updatePositionRef.current = updatePosition;
 
   // Start position tracking loop
   const startPositionTracking = useCallback(() => {
@@ -111,14 +126,17 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
   stopTrackingRef.current = stopPositionTracking;
 
   // Play
-  const play = useCallback(() => {
+  const play = useCallback(async () => {
     if (!audioContext || !audioBufferRef.current) return;
 
     // Resume AudioContext if suspended (autoplay policy)
     if (audioContext.state === 'suspended') {
-      audioContext.resume().catch(err => {
+      try {
+        await audioContext.resume();
+      } catch (err) {
         console.error('[useAudioPlayer] Failed to resume AudioContext:', err);
-      });
+        return;
+      }
     }
 
     // Start dual playback from current offset
