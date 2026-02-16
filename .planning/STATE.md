@@ -6,33 +6,35 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** Enable anyone to create chopped and screwed remixes in their browser by loading audio files, using keyboard shortcuts to trigger crossfader chops (switching between main and ahead playback positions) while adjusting playback speed, and recording their performance as an MP3.
 
-**Current focus:** Phase 1 - Audio Foundation
+**Current focus:** Phase 3 - Live Performance
 
 ## Current Position
 
-Phase: 1 of 4 (Audio Foundation)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-14 — Completed 01-02-PLAN.md (UI components and keyboard shortcuts)
+Phase: 3 of 4 (Live Performance)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-15 - Completed 03-01-PLAN.md (Dual-playback audio engine)
 
-Progress: [██████████] 100% of Phase 1 ✓
+Progress: [█████████████████░░░] 83% (5/6 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 105 min (1h 45m)
-- Total execution time: 3.5 hours
+- Total plans completed: 5
+- Average duration: 131 min (2h 11m)
+- Total execution time: 10h 52m
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Audio Foundation | 2/2 ✓ | 210 min | 105 min |
+| 1. Audio Foundation | 2/2 | 210 min | 105 min |
+| 2. Waveform Visualization | 2/2 | 756 min | 378 min |
+| 3. Live Performance | 1/2 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (201m), 01-02 (9m)
-- Trend: Significant speedup in 01-02 (UI layer built on solid foundation)
+- Last 5 plans: 01-02 (9m), 02-01 (750m), 02-02 (6m), 03-01 (4m)
+- Trend: Implementation tasks fast, checkpoint iterations add time
 
 *Updated after each plan completion*
 
@@ -57,6 +59,18 @@ Recent decisions affecting current work:
 - **Speed percentage format (01-02)**: Display only number above slider (e.g. "75%"), no "Speed:" label per user decision.
 - **Keyboard shortcuts disabled in text inputs (01-02)**: Filter HTMLInputElement/HTMLTextAreaElement/HTMLSelectElement targets.
 - **Always-visible keyboard legend (01-02)**: Fixed bottom-right position, not modal, not toggled.
+- **Wavesurfer.js visualization-only architecture (02-01)**: Volume 0, all audio from Phase 1 AudioBufferSourceNode. Preserves dual-playback capability for Phase 3.
+- **Phase 1 currentTime as single source of truth (02-01)**: Unidirectional data flow - Phase 1 -> Waveform cursor position via setTime().
+- **Explicit source node cleanup in seek() (02-01)**: Prevents AudioBufferSourceNode accumulation during rapid seeking.
+- **Canvas overlay with pointer-events pass-through (02-02)**: ChopMarkerOverlay allows clicks through to waveform seek.
+- **WCAG contrast for marker color (02-02)**: Automatic white/black selection based on waveform background color.
+- **Chop markers deferred to v2 (02-02)**: User decision - visual feedback not required for v1 launch. Implementation complete and ready for future use.
+- **GainNodes passed into createDualSources (03-01)**: Persistent GainNodes reused across play/stop/seek cycles; only AudioBufferSourceNodes are single-use.
+- **masterGain volume isolation (03-01)**: User volume slider controls masterGain, crossfader controls mainGain/aheadGain independently.
+- **useRef for activePositionRef (03-01)**: Prevents double-toggle bugs during rapid Shift key presses (useState batching causes stale reads).
+- **cancelScheduledValues before gain init (03-01)**: Clears stale setTargetAtTime automation from previous crossfade toggles.
+- **onEnded callback parameter (03-01)**: useDualPlayback signals end-of-file via callback, stored in ref for closure stability.
+- **Live playback rate update (03-01)**: AudioBufferSourceNode.playbackRate is an AudioParam, updated directly without source recreation.
 
 ### Pending Todos
 
@@ -65,27 +79,32 @@ None yet.
 ### Blockers/Concerns
 
 **Phase 1 architectural discipline (COMPLETE):**
-- ✅ Web Audio API timing uses AudioContext.currentTime (verified: no setTimeout/setInterval in 01-01)
-- ✅ AudioNode cleanup implemented (verified: disconnect calls in useAudioPlayer)
-- ✅ Autoplay policy handled (user gesture event listeners in useAudioContext)
-- ✅ Module-level singleton AudioContext (verified: survives component unmount in 01-02)
-- ✅ All user decisions implemented (speed format, keyboard filtering, always-visible legend)
-- ✅ Phase 1 complete and user-approved via checkpoint
+- All Phase 1 constraints verified and maintained through Phase 3
 
-**Phase 3 critical implementation:**
-- Crossfader via GainNode with smooth value ramping between two playback sources
-- Perfect sync required between main and ahead positions (no drift)
-- When chopping drums "1, 3, 1, 2" at second "1", must produce "1, 3, 2, 2"
+**Phase 2 visualization discipline (COMPLETE):**
+- All Phase 2 constraints verified and maintained through Phase 3
+
+**Phase 3 dual-playback engine (Plan 01 COMPLETE):**
+- Crossfader via GainNode with setTargetAtTime (15ms time constant) for click-free switching
+- Perfect sync between main and ahead via shared AudioContext.currentTime start time
+- useRef toggle state prevents double-toggle bugs during rapid key presses
+- Seek preserves crossfader state via activePositionRef persistence
+- Speed changes apply to both sources simultaneously via live AudioParam update
+- Volume isolated via masterGain node (separate from crossfader gains)
+
+**Phase 3 remaining (Plan 02):**
+- Wire Shift key handler to toggleChop in App.tsx
+- Add offset slider UI (0.1s-2.0s range, 0.1s step, 0.5s default)
+- Reset to main position on new file load
+- Guard chop key against non-playing states
 
 **Research findings to apply:**
-- wavesurfer.js 7.x for waveform visualization (Phase 2)
-- realtime-bpm-analyzer 5.0.0 for potential BPM detection (deferred to v2)
 - mp3-mediarecorder 4.0.5 for MP3 export (Phase 4)
 
 ## Session Continuity
 
-Last session: 2026-02-14
-Stopped at: Completed Phase 1 (01-02-PLAN.md - UI components and keyboard shortcuts)
+Last session: 2026-02-15
+Stopped at: Completed 03-01-PLAN.md (Dual-playback audio engine)
 Resume file: None
 
-**Next:** Begin Phase 2 (Waveform Visualization) - Execute 02-01-PLAN.md to add visual playback feedback
+**Next:** Execute 03-02-PLAN.md to wire dual-playback UI (Shift key handler, offset slider, state resets)
