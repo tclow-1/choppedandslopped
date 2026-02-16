@@ -17,7 +17,7 @@ export function OffsetSlider({ offset, onOffsetChange, disabled }: OffsetSliderP
         id="offset-slider"
         type="range"
         min="0.1"
-        max="2.0"
+        max="0.5"
         step="0.1"
         value={offset}
         onChange={(e) => onOffsetChange(parseFloat(e.target.value))}

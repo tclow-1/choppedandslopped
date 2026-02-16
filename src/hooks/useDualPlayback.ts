@@ -44,8 +44,8 @@ export function useDualPlayback(
 
   // Offset tracked via useState for reactivity (exposed in return object)
   // Also tracked in ref for immediate reads in callbacks
-  const [offset, setOffsetState] = useState(0.5);
-  const offsetRef = useRef(0.5);
+  const [offset, setOffsetState] = useState(0.3);
+  const offsetRef = useRef(0.3);
 
   // Active state tracked via useState for reactivity (exposed in return object)
   // Also tracked in ref for immediate reads in callbacks
