@@ -227,13 +227,17 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     // Volume sync to masterGain is handled by useDualPlayback's volume useEffect
   }, []);
 
-  // Cleanup audio sources when dual playback changes
+  // Cleanup audio sources on unmount only
+  // Store refs for cleanup to avoid running on every dependency change
+  const dualRef = useRef(dual);
+  dualRef.current = dual;
+
   useEffect(() => {
     return () => {
-      dual.stopDual();
-      stopPositionTracking();
+      dualRef.current.stopDual();
+      stopTrackingRef.current();
     };
-  }, [dual, stopPositionTracking]);
+  }, []); // Empty deps - only run on mount/unmount
 
   // Cleanup blob URL on unmount only (not when dual changes)
   useEffect(() => {
