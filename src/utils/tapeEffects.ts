@@ -44,8 +44,8 @@ export function createTapeFilters(
 
   const highPass = audioContext.createBiquadFilter();
   highPass.type = 'highpass';
-  // Intensity 0 = 1Hz (fully transparent), Intensity 1 = 200Hz (remove bass rumble)
-  highPass.frequency.value = 1 + (199 * intensity);
+  // Intensity 0 = 1Hz (fully transparent), Intensity 1 = 40Hz (removes only sub-rumble, preserves bass)
+  highPass.frequency.value = 1 + (39 * intensity);
   highPass.Q.value = 0.707;
 
   return { lowPass, highPass };
@@ -147,7 +147,7 @@ export function createTapeEffect(
 
       // Update filters with smooth ramping (0% = fully transparent)
       lowPass.frequency.setTargetAtTime(22050 - (18050 * newIntensity), now, 0.05);
-      highPass.frequency.setTargetAtTime(1 + (199 * newIntensity), now, 0.05);
+      highPass.frequency.setTargetAtTime(1 + (39 * newIntensity), now, 0.05);
 
       // Update noise gain
       noiseGain.gain.setTargetAtTime(newIntensity * 0.006, now, 0.05);
