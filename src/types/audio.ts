@@ -1,7 +1,5 @@
 // TypeScript type definitions for the audio system
 
-import type { YoutubeLoadState } from './youtube';
-
 export type PlaybackState = 'idle' | 'playing' | 'paused';
 
 export interface AudioPlayerState {
@@ -12,7 +10,6 @@ export interface AudioPlayerState {
   volume: number; // 0.0 to 1.0
   fileName: string | null;
   audioUrl: string | null; // Object URL for Waveform visualization
-  youtubeLoadState: YoutubeLoadState;
 }
 
 export interface ChopMarker {
@@ -21,7 +18,6 @@ export interface ChopMarker {
 
 export interface AudioPlayerControls {
   loadFile: (file: File) => Promise<void>;
-  loadYoutube: (url: string) => Promise<void>;
   play: () => void;
   pause: () => void;
   stop: () => void;
