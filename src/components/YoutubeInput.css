@@ -1,84 +1,86 @@
-.youtube-input-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.youtube-helper {
+  padding: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 1rem 0;
 }
 
-.youtube-input {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  align-items: stretch;
+.youtube-helper h3 {
+  margin: 0 0 1rem 0;
+  color: #4F4A85;
+  font-size: 1.1rem;
 }
 
-.youtube-input input {
+.youtube-input-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.youtube-input-row input[type="text"] {
   flex: 1;
-  padding: 12px 16px;
+  padding: 0.75rem;
   background-color: #2a2a3e;
   color: #e0e0e0;
   border: 1px solid #4F4A85;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.youtube-input-row input[type="text"]:focus {
   outline: none;
-  transition: border-color 0.2s ease;
+  border-color: #6B63FF;
 }
 
-.youtube-input input:focus {
-  border-color: #6f64b8;
-}
-
-.youtube-input input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.youtube-input button {
-  padding: 12px 24px;
+.youtube-open-btn {
+  padding: 0.75rem 1.5rem;
   background-color: #4F4A85;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
   white-space: nowrap;
+  transition: background-color 0.2s;
 }
 
-.youtube-input button:hover:not(:disabled) {
-  background-color: #6f64b8;
+.youtube-open-btn:hover:not(:disabled) {
+  background-color: #6B63FF;
 }
 
-.youtube-input button:disabled {
-  opacity: 0.6;
+.youtube-open-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.youtube-status {
-  font-size: 0.85em;
-  color: #a0a0b0;
-  padding: 4px 0;
-}
-
-.youtube-status.loading {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.youtube-status.error {
+.youtube-error {
+  display: block;
   color: #ff4444;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
 }
 
-.youtube-validation-error {
-  font-size: 0.85em;
-  color: #ff4444;
-  margin-top: 4px;
+.youtube-instructions {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: rgba(79, 74, 133, 0.1);
+  border-left: 3px solid #4F4A85;
+  border-radius: 4px;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1.0;
-  }
+.youtube-instructions p {
+  margin: 0 0 0.5rem 0;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.youtube-instructions ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #b0b0b0;
+  font-size: 0.85rem;
+}
+
+.youtube-instructions li {
+  margin: 0.25rem 0;
 }
