@@ -97,14 +97,6 @@ function App() {
         fileName={fileName}
       />
 
-      <div className="input-divider">
-        <span>or</span>
-      </div>
-
-      <YoutubeInput
-        disabled={playbackState === 'playing'}
-      />
-
       {hasFile && (
         <VinylDisc playbackState={playbackState} isChopped={chopPosition === 'ahead'} />
       )}
@@ -150,6 +142,10 @@ function App() {
           chopMarkerTimes={chopMarkerTimes}
         />
       )}
+
+      <YoutubeInput
+        disabled={playbackState === 'playing'}
+      />
 
       <KeyboardLegend />
     </div>
