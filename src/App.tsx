@@ -21,9 +21,7 @@ function App() {
     volume,
     fileName,
     audioUrl,
-    youtubeLoadState,
     loadFile,
-    loadYoutube,
     play,
     pause,
     stop,
@@ -50,12 +48,6 @@ function App() {
     // Offset slider value persists (not reset)
     // Note: useDualPlayback's activePositionRef defaults to 'main',
     // and loadFile triggers new buffer which reinitializes the hook
-  };
-
-  // Wrap loadYoutube to clear markers on new YouTube load
-  const handleYoutubeLoad = async (url: string) => {
-    setChopMarkerTimes([]); // Clear markers on new load
-    await loadYoutube(url);
   };
 
   // Wrap stop to also clear chop markers
@@ -110,8 +102,6 @@ function App() {
       </div>
 
       <YoutubeInput
-        onYoutubeLoad={handleYoutubeLoad}
-        loadState={youtubeLoadState}
         disabled={playbackState === 'playing'}
       />
 
