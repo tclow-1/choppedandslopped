@@ -40,7 +40,7 @@ export function PlaybackControls({
         <button
           onClick={onChop}
           disabled={disabled || !isPlaying}
-          className="control-button"
+          className="control-button chop-button"
         >
           Chop
         </button>
