@@ -38,14 +38,14 @@ export function createTapeFilters(
 ): { lowPass: BiquadFilterNode; highPass: BiquadFilterNode } {
   const lowPass = audioContext.createBiquadFilter();
   lowPass.type = 'lowpass';
-  // Intensity 0 = 20kHz (no filtering), Intensity 1 = 4kHz (heavy muffling)
-  lowPass.frequency.value = 20000 - (16000 * intensity);
+  // Intensity 0 = 22050Hz (Nyquist, fully transparent), Intensity 1 = 4kHz (heavy muffling)
+  lowPass.frequency.value = 22050 - (18050 * intensity);
   lowPass.Q.value = 0.707; // Butterworth response
 
   const highPass = audioContext.createBiquadFilter();
   highPass.type = 'highpass';
-  // Intensity 0 = 20Hz (no filtering), Intensity 1 = 200Hz (remove bass rumble)
-  highPass.frequency.value = 20 + (180 * intensity);
+  // Intensity 0 = 1Hz (fully transparent), Intensity 1 = 200Hz (remove bass rumble)
+  highPass.frequency.value = 1 + (199 * intensity);
   highPass.Q.value = 0.707;
 
   return { lowPass, highPass };
@@ -85,8 +85,8 @@ export function createTapeHiss(
   noiseSource.loop = true;
 
   const noiseGain = audioContext.createGain();
-  // Intensity 0 = silent, Intensity 1 = -45dB relative to signal
-  noiseGain.gain.value = intensity * 0.006; // Very subtle
+  // Intensity 0 = completely silent, Intensity 1 = subtle hiss
+  noiseGain.gain.value = intensity * 0.006;
 
   noiseSource.connect(noiseGain);
 
@@ -145,9 +145,9 @@ export function createTapeEffect(
       // Update all parameters based on new intensity
       const now = audioContext.currentTime;
 
-      // Update filters with smooth ramping
-      lowPass.frequency.setTargetAtTime(20000 - (16000 * newIntensity), now, 0.05);
-      highPass.frequency.setTargetAtTime(20 + (180 * newIntensity), now, 0.05);
+      // Update filters with smooth ramping (0% = fully transparent)
+      lowPass.frequency.setTargetAtTime(22050 - (18050 * newIntensity), now, 0.05);
+      highPass.frequency.setTargetAtTime(1 + (199 * newIntensity), now, 0.05);
 
       // Update noise gain
       noiseGain.gain.setTargetAtTime(newIntensity * 0.006, now, 0.05);

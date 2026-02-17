@@ -25,10 +25,6 @@ export function KeyboardLegend() {
           <kbd>Space</kbd>
           <span>Chop</span>
         </div>
-        <div className="shortcut-item">
-          <kbd>T</kbd>
-          <span>Toggle Tape Effect</span>
-        </div>
       </div>
     </div>
   );

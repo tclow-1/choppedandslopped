@@ -9,6 +9,7 @@ import { PlaybackControls } from './components/PlaybackControls';
 import { SpeedSlider } from './components/SpeedSlider';
 import { VolumeSlider } from './components/VolumeSlider';
 import { OffsetSlider } from './components/OffsetSlider';
+import { TapeSlider } from './components/TapeSlider';
 import { KeyboardLegend } from './components/KeyboardLegend';
 import './App.css';
 
@@ -33,9 +34,7 @@ function App() {
     setChopOffset,
     chopOffset,
     chopPosition,
-    tapeEffectEnabled,
     tapeEffectIntensity,
-    toggleTapeEffect,
     setTapeEffectIntensity,
   } = useAudioPlayer();
 
@@ -90,11 +89,6 @@ function App() {
         setChopMarkerTimes(prev => [...prev, currentTime]);
       }
     },
-    't': () => {
-      if (hasFile) {
-        toggleTapeEffect();
-      }
-    },
   });
 
   return (
@@ -142,35 +136,11 @@ function App() {
         disabled={!hasFile}
       />
 
-      <div className="control-group">
-        <label className="control-label">
-          Tape Effect
-          <button
-            onClick={toggleTapeEffect}
-            disabled={!hasFile}
-            className={`toggle-btn ${tapeEffectEnabled ? 'active' : ''}`}
-          >
-            {tapeEffectEnabled ? 'ON' : 'OFF'}
-          </button>
-        </label>
-      </div>
-
-      {tapeEffectEnabled && (
-        <div className="control-group">
-          <label className="control-label">
-            Tape Intensity: {Math.round(tapeEffectIntensity * 100)}%
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={tapeEffectIntensity * 100}
-              onChange={(e) => setTapeEffectIntensity(Number(e.target.value) / 100)}
-              disabled={!hasFile}
-              className="slider"
-            />
-          </label>
-        </div>
-      )}
+      <TapeSlider
+        intensity={tapeEffectIntensity}
+        onIntensityChange={setTapeEffectIntensity}
+        disabled={!hasFile}
+      />
 
       {hasFile && (
         <Waveform
