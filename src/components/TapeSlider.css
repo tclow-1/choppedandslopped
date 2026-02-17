@@ -23,6 +23,10 @@
   font-weight: 500;
 }
 
+.tape-hint {
+  color: #4F4A85;
+}
+
 .tape-slider input[type="range"] {
   width: 100%;
   max-width: 400px;

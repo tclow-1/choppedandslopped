@@ -38,6 +38,13 @@
   background: #333;
 }
 
+.waveform-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+}
+
 /* Prevent button visual state changes from keyboard shortcuts */
 .control-button:active:focus {
   outline: none;

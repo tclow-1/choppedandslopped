@@ -12,7 +12,7 @@ export function TapeSlider({ intensity, onIntensityChange, disabled }: TapeSlide
       <div className="tape-value">
         {Math.round(intensity * 100)}%
       </div>
-      <label htmlFor="tape-slider">Cassette Effect Intensity (Try 90%)</label>
+      <label htmlFor="tape-slider">Cassette Effect Intensity <span className="tape-hint">(Try 90%)</span></label>
       <input
         id="tape-slider"
         type="range"

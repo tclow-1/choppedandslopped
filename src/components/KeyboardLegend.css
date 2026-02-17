@@ -7,6 +7,7 @@
   border-radius: 8px;
   padding: 16px;
   min-width: 200px;
+  z-index: 100;
 }
 
 .keyboard-legend h3 {

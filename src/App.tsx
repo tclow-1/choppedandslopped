@@ -143,6 +143,10 @@ function App() {
       />
 
       {hasFile && (
+        <p className="waveform-hint">Click anywhere on the waveform below to seek</p>
+      )}
+
+      {hasFile && (
         <Waveform
           audioUrl={audioUrl}
           currentTime={currentTime}
