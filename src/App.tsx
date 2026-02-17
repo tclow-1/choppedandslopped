@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logo from './assets/choppedandslopped.png';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { AudioUpload } from './components/AudioUpload';
@@ -93,7 +94,7 @@ function App() {
 
   return (
     <div className="app-container" tabIndex={0}>
-      <h1>Chopped & Slopped App</h1>
+      <img src={logo} alt="Chopped & Slopped App" className="app-logo" />
 
       <AudioUpload
         onFileLoad={handleFileLoad}

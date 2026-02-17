@@ -13,12 +13,12 @@
 }
 
 .audio-upload.drag-active {
-  border-color: #4CAF50;
-  background-color: rgba(76, 175, 80, 0.1);
+  border-color: #4F4A85;
+  background-color: rgba(79, 74, 133, 0.1);
 }
 
 .audio-upload.has-file {
-  border-color: #4CAF50;
+  border-color: #4F4A85;
 }
 
 .audio-upload p {

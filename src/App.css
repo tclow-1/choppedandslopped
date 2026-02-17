@@ -16,6 +16,13 @@
   font-weight: 700;
 }
 
+.app-logo {
+  display: block;
+  margin: 0 auto 20px;
+  max-width: 400px;
+  width: 100%;
+}
+
 /* Input divider (for "or" between upload and YouTube input) */
 .input-divider {
   display: flex;
