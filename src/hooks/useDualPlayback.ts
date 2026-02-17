@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { createDualSources } from '../utils/audioNodes';
+import { createTapeEffect, TapeEffectChain } from '../utils/tapeEffects';
 import type { ActivePosition } from '../types/audio';
 
 interface UseDualPlaybackReturn {
@@ -20,6 +21,14 @@ interface UseDualPlaybackReturn {
   offset: number;
   /** Whether dual playback sources are currently active */
   isActive: boolean;
+  /** Toggle tape effect on/off */
+  toggleTapeEffect: () => void;
+  /** Set tape effect intensity (0.0 to 1.0) */
+  setTapeIntensity: (intensity: number) => void;
+  /** Whether tape effect is enabled */
+  tapeEnabled: boolean;
+  /** Current tape effect intensity */
+  tapeIntensity: number;
 }
 
 export function useDualPlayback(
@@ -54,6 +63,11 @@ export function useDualPlayback(
   const [isActive, setIsActiveState] = useState(false);
   const isActiveRef = useRef(false);
 
+  // Tape effect state and refs
+  const tapeEffectRef = useRef<TapeEffectChain | null>(null);
+  const [tapeEnabled, setTapeEnabled] = useState(false);
+  const [tapeIntensity, setTapeIntensityState] = useState(0.5); // Default 50%
+
   // Store onEnded callback in ref to avoid stale closure issues
   const onEndedRef = useRef(onEnded);
   onEndedRef.current = onEnded;
@@ -79,15 +93,51 @@ export function useDualPlayback(
     if (!mainGainRef.current) {
       mainGainRef.current = audioContext.createGain();
       mainGainRef.current.gain.value = 1;  // Start at 1 (active)
-      mainGainRef.current.connect(masterGainRef.current);
     }
 
     if (!aheadGainRef.current) {
       aheadGainRef.current = audioContext.createGain();
       aheadGainRef.current.gain.value = 0;  // Start at 0 (silent)
-      aheadGainRef.current.connect(masterGainRef.current);
     }
-  }, [audioContext]);
+
+    // Handle tape effect routing
+    if (tapeEnabled && !tapeEffectRef.current) {
+      // Create tape effect chain
+      tapeEffectRef.current = createTapeEffect(audioContext, tapeIntensity);
+
+      // Rewire: mainGain/aheadGain → tapeEffect.input → tapeEffect.output → masterGain
+      mainGainRef.current?.disconnect();
+      aheadGainRef.current?.disconnect();
+
+      mainGainRef.current?.connect(tapeEffectRef.current.input);
+      aheadGainRef.current?.connect(tapeEffectRef.current.input);
+      tapeEffectRef.current.output.connect(masterGainRef.current!);
+    } else if (!tapeEnabled && tapeEffectRef.current) {
+      // Bypass tape effect: reconnect directly to masterGain
+      mainGainRef.current?.disconnect();
+      aheadGainRef.current?.disconnect();
+
+      mainGainRef.current?.connect(masterGainRef.current!);
+      aheadGainRef.current?.connect(masterGainRef.current!);
+
+      // Clean up tape effect
+      try {
+        tapeEffectRef.current.noiseSource.stop();
+      } catch (_e) {
+        // Already stopped
+      }
+      tapeEffectRef.current.input.disconnect();
+      tapeEffectRef.current.output.disconnect();
+      tapeEffectRef.current = null;
+    } else if (!tapeEnabled) {
+      // No tape effect, direct connection
+      mainGainRef.current?.disconnect();
+      aheadGainRef.current?.disconnect();
+
+      mainGainRef.current?.connect(masterGainRef.current!);
+      aheadGainRef.current?.connect(masterGainRef.current!);
+    }
+  }, [audioContext, tapeEnabled, tapeIntensity, volume]);
 
   /** Clean up existing source nodes (stop + disconnect + null) */
   const cleanupSources = useCallback(() => {
@@ -240,6 +290,22 @@ export function useDualPlayback(
     setOffsetState(newOffset);
   }, []);
 
+  /** Toggle tape effect on/off */
+  const toggleTapeEffect = useCallback(() => {
+    setTapeEnabled(prev => !prev);
+  }, []);
+
+  /** Set tape effect intensity (0.0 to 1.0) */
+  const setTapeIntensity = useCallback((intensity: number) => {
+    const clamped = Math.max(0.0, Math.min(1.0, intensity));
+    setTapeIntensityState(clamped);
+
+    // Update effect in real-time if it exists
+    if (tapeEffectRef.current && audioContext) {
+      tapeEffectRef.current.updateIntensity(clamped);
+    }
+  }, [audioContext]);
+
   // Volume sync: update masterGain when volume prop changes
   useEffect(() => {
     if (!masterGainRef.current || !audioContext) return;
@@ -256,11 +322,30 @@ export function useDualPlayback(
     }
   }, [buffer, audioContext, ensureGainNodes]);
 
+  // Re-run ensureGainNodes when tape settings change
+  useEffect(() => {
+    if (audioContext) {
+      ensureGainNodes();
+    }
+  }, [tapeEnabled, audioContext, ensureGainNodes]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       // Stop both sources
       cleanupSources();
+
+      // Clean up tape effect
+      if (tapeEffectRef.current) {
+        try {
+          tapeEffectRef.current.noiseSource.stop();
+        } catch (_e) {
+          // Already stopped
+        }
+        tapeEffectRef.current.input.disconnect();
+        tapeEffectRef.current.output.disconnect();
+        tapeEffectRef.current = null;
+      }
 
       // Disconnect all GainNodes
       if (mainGainRef.current) {
@@ -288,5 +373,9 @@ export function useDualPlayback(
     offset,
     isActive,
     activePosition,
-  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset, offset, isActive, activePosition]);
+    toggleTapeEffect,
+    setTapeIntensity,
+    tapeEnabled,
+    tapeIntensity,
+  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset, offset, isActive, activePosition, toggleTapeEffect, setTapeIntensity, tapeEnabled, tapeIntensity]);
 }

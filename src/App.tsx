@@ -33,6 +33,10 @@ function App() {
     setChopOffset,
     chopOffset,
     chopPosition,
+    tapeEffectEnabled,
+    tapeEffectIntensity,
+    toggleTapeEffect,
+    setTapeEffectIntensity,
   } = useAudioPlayer();
 
   const hasFile = fileName !== null;
@@ -86,6 +90,11 @@ function App() {
         setChopMarkerTimes(prev => [...prev, currentTime]);
       }
     },
+    't': () => {
+      if (hasFile) {
+        toggleTapeEffect();
+      }
+    },
   });
 
   return (
@@ -132,6 +141,36 @@ function App() {
         onOffsetChange={setChopOffset}
         disabled={!hasFile}
       />
+
+      <div className="control-group">
+        <label className="control-label">
+          Tape Effect
+          <button
+            onClick={toggleTapeEffect}
+            disabled={!hasFile}
+            className={`toggle-btn ${tapeEffectEnabled ? 'active' : ''}`}
+          >
+            {tapeEffectEnabled ? 'ON' : 'OFF'}
+          </button>
+        </label>
+      </div>
+
+      {tapeEffectEnabled && (
+        <div className="control-group">
+          <label className="control-label">
+            Tape Intensity: {Math.round(tapeEffectIntensity * 100)}%
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={tapeEffectIntensity * 100}
+              onChange={(e) => setTapeEffectIntensity(Number(e.target.value) / 100)}
+              disabled={!hasFile}
+              className="slider"
+            />
+          </label>
+        </div>
+      )}
 
       {hasFile && (
         <Waveform

@@ -10,6 +10,8 @@ export interface AudioPlayerState {
   volume: number; // 0.0 to 1.0
   fileName: string | null;
   audioUrl: string | null; // Object URL for Waveform visualization
+  tapeEffectEnabled: boolean; // Cassette tape effect toggle
+  tapeEffectIntensity: number; // 0.0 to 1.0
 }
 
 export interface ChopMarker {
@@ -29,6 +31,8 @@ export interface AudioPlayerControls {
   setChopOffset: (offset: number) => void;
   chopOffset: number;
   isDualActive: boolean;
+  toggleTapeEffect: () => void;
+  setTapeEffectIntensity: (intensity: number) => void;
 }
 
 export interface DualSources {

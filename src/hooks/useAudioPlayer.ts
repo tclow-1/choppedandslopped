@@ -227,6 +227,11 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     // Volume sync to masterGain is handled by useDualPlayback's volume useEffect
   }, []);
 
+  // Tape effect controls
+  const setTapeEffectIntensity = useCallback((intensity: number) => {
+    dual.setTapeIntensity(intensity);
+  }, [dual]);
+
   // Cleanup audio sources on unmount only
   // Store refs for cleanup to avoid running on every dependency change
   const dualRef = useRef(dual);
@@ -257,6 +262,8 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     volume,
     fileName,
     audioUrl,
+    tapeEffectEnabled: dual.tapeEnabled,
+    tapeEffectIntensity: dual.tapeIntensity,
     // Controls
     loadFile,
     play,
@@ -272,5 +279,8 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     chopOffset: dual.offset,
     isDualActive: dual.isActive,
     chopPosition: dual.activePosition,
+    // Tape effect controls
+    toggleTapeEffect: dual.toggleTapeEffect,
+    setTapeEffectIntensity,
   };
 }
