@@ -33,6 +33,7 @@ export interface AudioPlayerControls {
   isDualActive: boolean;
   toggleTapeEffect: () => void;
   setTapeEffectIntensity: (intensity: number) => void;
+  chopPosition: ActivePosition;
 }
 
 export interface DualSources {

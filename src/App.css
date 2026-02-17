@@ -21,6 +21,7 @@
   margin: 0 auto 20px;
   max-width: 400px;
   width: 100%;
+  cursor: pointer;
 }
 
 /* Input divider (for "or" between upload and YouTube input) */
@@ -55,4 +56,16 @@
 /* Prevent button visual state changes from keyboard shortcuts */
 .control-button:active:focus {
   outline: none;
+}
+
+/* Mobile layout tweaks */
+@media (max-width: 600px) {
+  .app-container {
+    padding: 20px 12px 80px 12px;
+    gap: 16px;
+  }
+
+  .app-logo {
+    max-width: 280px;
+  }
 }

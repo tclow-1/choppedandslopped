@@ -94,7 +94,9 @@ function App() {
 
   return (
     <div className="app-container" tabIndex={0}>
-      <img src={logo} alt="Chopped & Slopped App" className="app-logo" />
+      <a href="https://screweduprecords.com/" target="_blank" rel="noopener noreferrer">
+        <img src={logo} alt="Chopped & Slopped App" className="app-logo" />
+      </a>
 
       <AudioUpload
         onFileLoad={handleFileLoad}

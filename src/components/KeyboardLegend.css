@@ -52,3 +52,10 @@
   font-size: 13px;
   color: #ccc;
 }
+
+/* Hide keyboard legend on touch devices — shortcuts don't apply */
+@media (pointer: coarse) {
+  .keyboard-legend {
+    display: none;
+  }
+}

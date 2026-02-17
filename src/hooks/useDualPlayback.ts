@@ -22,6 +22,8 @@ interface UseDualPlaybackReturn {
   offset: number;
   /** Whether dual playback sources are currently active */
   isActive: boolean;
+  /** Current crossfader position */
+  activePosition: ActivePosition;
   /** Toggle tape effect on/off */
   toggleTapeEffect: () => void;
   /** Set tape effect intensity (0.0 to 1.0) */
