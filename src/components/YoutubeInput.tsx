@@ -1,70 +1,58 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState } from 'react';
 import { validateYoutubeUrl } from '../utils/youtubeExtractor';
-import type { YoutubeLoadState } from '../types/youtube';
 import './YoutubeInput.css';
 
 interface YoutubeInputProps {
-  onYoutubeLoad: (url: string) => void;
-  loadState: YoutubeLoadState;
   disabled?: boolean;
 }
 
-export function YoutubeInput({ onYoutubeLoad, loadState, disabled = false }: YoutubeInputProps) {
+export function YoutubeInput({ disabled = false }: YoutubeInputProps) {
   const [url, setUrl] = useState('');
   const [touched, setTouched] = useState(false);
 
   const validation = validateYoutubeUrl(url);
-  const showValidationError = touched && !validation.valid;
+  const showError = touched && !validation.valid;
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (validation.valid && !disabled && loadState.status !== 'loading') {
-      onYoutubeLoad(url);
+  const handleOpenYtmp3 = () => {
+    if (validation.valid && url) {
+      // Try to pass URL parameter (ytmp3.ai may or may not support it)
+      window.open(`https://ytmp3.ai/?url=${encodeURIComponent(url)}`, '_blank');
     }
   };
 
-  // Clear input and reset touched state on successful load
-  useEffect(() => {
-    if (loadState.status === 'success') {
-      setUrl('');
-      setTouched(false);
-    }
-  }, [loadState.status]);
-
-  const isSubmitDisabled = !validation.valid || disabled || loadState.status === 'loading';
-  const buttonText = loadState.status === 'loading' ? 'Loading...' : 'Load';
-
   return (
-    <div className="youtube-input-container">
-      <form onSubmit={handleSubmit} className="youtube-input">
+    <div className="youtube-helper">
+      <h3>Load from YouTube</h3>
+      <div className="youtube-input-row">
         <input
           type="text"
+          placeholder="Paste YouTube URL here..."
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onBlur={() => setTouched(true)}
-          placeholder="Paste YouTube URL..."
-          disabled={disabled || loadState.status === 'loading'}
+          disabled={disabled}
           data-youtube-input
         />
         <button
-          type="submit"
-          disabled={isSubmitDisabled}
+          onClick={handleOpenYtmp3}
+          disabled={!validation.valid || disabled}
+          className="youtube-open-btn"
         >
-          {buttonText}
+          Open in ytmp3.ai ↗
         </button>
-      </form>
-
-      {loadState.status === 'loading' && (
-        <div className="youtube-status loading">{loadState.stage}</div>
+      </div>
+      {showError && validation.error && (
+        <span className="youtube-error">{validation.error}</span>
       )}
-
-      {loadState.status === 'error' && (
-        <div className="youtube-status error">{loadState.error}</div>
-      )}
-
-      {showValidationError && validation.error && (
-        <div className="youtube-validation-error">{validation.error}</div>
-      )}
+      <div className="youtube-instructions">
+        <p><strong>How to use:</strong></p>
+        <ol>
+          <li>Paste a YouTube URL above</li>
+          <li>Click "Open in ytmp3.ai" button</li>
+          <li>Download the MP3 file on ytmp3.ai</li>
+          <li>Drag the downloaded MP3 into the upload area above</li>
+        </ol>
+      </div>
     </div>
   );
 }
