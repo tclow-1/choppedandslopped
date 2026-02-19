@@ -1,9 +1,14 @@
 .record-controls {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   padding: 16px;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
+}
+
+.record-hint {
+  width: 100%;
 }
 
 /* Record button (idle state) */
