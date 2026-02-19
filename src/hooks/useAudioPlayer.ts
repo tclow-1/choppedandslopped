@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { useDualPlayback } from './useDualPlayback';
 import { loadAudioFile } from '../utils/audioLoader';
+import { useRecorder } from './useRecorder';
 import type { PlaybackState, AudioPlayerState, AudioPlayerControls } from '../types/audio';
 
 export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
@@ -46,6 +47,9 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
 
   // Initialize dual playback engine
   const dual = useDualPlayback(audioBuffer, playbackRate, volume, handleDualEnded);
+
+  // Initialize recording engine
+  const recorder = useRecorder(audioContext, dual.masterGainNode);
 
   // Load audio file
   const loadFile = useCallback(async (file: File) => {
@@ -282,5 +286,12 @@ export function useAudioPlayer(): AudioPlayerState & AudioPlayerControls {
     // Tape effect controls
     toggleTapeEffect: dual.toggleTapeEffect,
     setTapeEffectIntensity,
+    // Recording controls
+    recordingState: recorder.recordingState,
+    recordingDownloadUrl: recorder.downloadUrl,
+    recordingDuration: recorder.recordingDuration,
+    startRecording: recorder.startRecording,
+    stopRecording: recorder.stopRecording,
+    clearRecording: recorder.clearRecording,
   };
 }

@@ -1,6 +1,7 @@
 // TypeScript type definitions for the audio system
 
 export type PlaybackState = 'idle' | 'playing' | 'paused';
+export type RecordingState = 'idle' | 'recording';
 
 export interface AudioPlayerState {
   playbackState: PlaybackState;
@@ -12,6 +13,9 @@ export interface AudioPlayerState {
   audioUrl: string | null; // Object URL for Waveform visualization
   tapeEffectEnabled: boolean; // Cassette tape effect toggle
   tapeEffectIntensity: number; // 0.0 to 1.0
+  recordingState: RecordingState;
+  recordingDownloadUrl: string | null;
+  recordingDuration: number;
 }
 
 export interface ChopMarker {
@@ -34,6 +38,9 @@ export interface AudioPlayerControls {
   toggleTapeEffect: () => void;
   setTapeEffectIntensity: (intensity: number) => void;
   chopPosition: ActivePosition;
+  startRecording: () => void;
+  stopRecording: () => void;
+  clearRecording: () => void;
 }
 
 export interface DualSources {

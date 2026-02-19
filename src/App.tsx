@@ -11,6 +11,7 @@ import { SpeedSlider } from './components/SpeedSlider';
 import { VolumeSlider } from './components/VolumeSlider';
 import { OffsetSlider } from './components/OffsetSlider';
 import { TapeSlider } from './components/TapeSlider';
+import { RecordButton } from './components/RecordButton';
 import { KeyboardLegend } from './components/KeyboardLegend';
 import './App.css';
 
@@ -37,6 +38,12 @@ function App() {
     chopPosition,
     tapeEffectIntensity,
     setTapeEffectIntensity,
+    recordingState,
+    recordingDownloadUrl,
+    recordingDuration,
+    startRecording,
+    stopRecording,
+    clearRecording,
   } = useAudioPlayer();
 
   const hasFile = fileName !== null;
@@ -47,6 +54,7 @@ function App() {
   // Wrap loadFile to clear markers and reset crossfader on new file load
   const handleFileLoad = async (file: File) => {
     setChopMarkerTimes([]); // Clear markers on new file
+    clearRecording(); // Clear any previous recording
     await loadFile(file);
     // Per user decision: reset to main position on new file load
     // Offset slider value persists (not reset)
@@ -54,8 +62,11 @@ function App() {
     // and loadFile triggers new buffer which reinitializes the hook
   };
 
-  // Wrap stop to also clear chop markers
+  // Wrap stop to also clear chop markers and stop recording
   const handleStop = () => {
+    if (recordingState === 'recording') {
+      stopRecording();
+    }
     stop();
     setChopMarkerTimes([]);
   };
@@ -90,6 +101,15 @@ function App() {
         setChopMarkerTimes(prev => [...prev, currentTime]);
       }
     },
+    'r': () => {
+      if (hasFile) {
+        if (recordingState === 'recording') {
+          stopRecording();
+        } else {
+          startRecording();
+        }
+      }
+    },
   });
 
   return (
@@ -118,6 +138,17 @@ function App() {
             setChopMarkerTimes(prev => [...prev, currentTime]);
           }
         }}
+        disabled={!hasFile}
+      />
+
+      <RecordButton
+        recordingState={recordingState}
+        recordingDuration={recordingDuration}
+        downloadUrl={recordingDownloadUrl}
+        fileName={fileName}
+        onStartRecording={startRecording}
+        onStopRecording={stopRecording}
+        onClearRecording={clearRecording}
         disabled={!hasFile}
       />
 

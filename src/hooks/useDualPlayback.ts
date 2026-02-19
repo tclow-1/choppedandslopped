@@ -32,6 +32,8 @@ interface UseDualPlaybackReturn {
   tapeEnabled: boolean;
   /** Current tape effect intensity */
   tapeIntensity: number;
+  /** The master gain node (for recording tap) */
+  masterGainNode: GainNode | null;
 }
 
 export function useDualPlayback(
@@ -46,6 +48,7 @@ export function useDualPlayback(
   const mainGainRef = useRef<GainNode | null>(null);
   const aheadGainRef = useRef<GainNode | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
+  const [masterGainNode, setMasterGainNode] = useState<GainNode | null>(null);
 
   // Single-use AudioBufferSourceNodes
   const mainSourceRef = useRef<AudioBufferSourceNode | null>(null);
@@ -92,6 +95,7 @@ export function useDualPlayback(
       masterGainRef.current = audioContext.createGain();
       masterGainRef.current.gain.value = volume;
       masterGainRef.current.connect(audioContext.destination);
+      setMasterGainNode(masterGainRef.current);
     }
 
     // Create main/ahead gains if needed
@@ -389,5 +393,6 @@ export function useDualPlayback(
     setTapeIntensity,
     tapeEnabled,
     tapeIntensity,
-  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset, offset, isActive, activePosition, toggleTapeEffect, setTapeIntensity, tapeEnabled, tapeIntensity]);
+    masterGainNode,
+  }), [startDual, stopDual, togglePosition, seekDual, updatePlaybackRate, setOffset, offset, isActive, activePosition, toggleTapeEffect, setTapeIntensity, tapeEnabled, tapeIntensity, masterGainNode]);
 }

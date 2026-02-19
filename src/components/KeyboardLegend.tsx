@@ -25,6 +25,10 @@ export function KeyboardLegend() {
           <kbd>Space</kbd>
           <span>Chop</span>
         </div>
+        <div className="shortcut-item">
+          <kbd>R</kbd>
+          <span>Record</span>
+        </div>
       </div>
     </div>
   );
